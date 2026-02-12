@@ -1,0 +1,142 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+% TODO: Replace with your actual project title
+\title{STAT 482 Proposal: [YOUR PROJECT TITLE HERE]}
+% TODO: Replace with all team member names
+\author{Team Member 1, Team Member 2, Team Member 3}
+\date{Spring 2026}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+
+\begin{document}
+
+\maketitle
+
+%% ============================================================
+%% SECTION 1: INTRODUCTION
+%% This section should cover:
+%%   - The data set and the question to be answered
+%%   - The importance of the study
+%%   - An introduction to the data set
+%%
+%% The entire proposal must be at least 300 words but no more
+%% than 10 pages (including words, tables, and graphs).
+%% ============================================================
+\section{Introduction}
+
+% TODO: Write 1--2 paragraphs introducing your topic area and why it matters.
+% Explain the real-world context, the motivation for the study,
+% and the specific research question(s) you aim to address.
+[INTRODUCE YOUR TOPIC HERE. Describe the broader context of the problem you
+are studying. Why is this topic important? What gap in knowledge or practical
+need does your project address? Clearly state the research question(s) your
+analysis will answer.]
+
+% TODO: Introduce and describe the data set you will use.
+% Where does it come from? How was it collected? What are the key variables?
+[INTRODUCE YOUR DATA SET HERE. Describe where the data comes from (e.g., a
+public repository, an API, a collaborator, etc.). Explain how the data were
+collected, the time period covered, the number of observations, and the key
+variables you will focus on. If the data set is publicly available, provide
+a citation or URL.]
+
+% --- Example of inline math (kept from the template for reference) ---
+% You can include mathematical notation like this:
+% $Y = f(\mathbf{s}, \mathbf{x}) + \epsilon, \quad \epsilon \stackrel{\mathrm{iid}}{\sim} \mathrm{N}(0, \sigma^{2})$
+
+% --- Example of display-mode equation ---
+% $$Y = f(\mathbf{s}, \mathbf{x}) + \epsilon, \quad \epsilon \stackrel{\mathrm{iid}}{\sim} \mathrm{N}(0, \sigma^{2})$$
+
+% --- Example of a numbered equation ---
+% \begin{equation}
+%   Y = f(\mathbf{s}, \mathbf{x}) + \epsilon, \quad \epsilon \stackrel{\mathrm{iid}}{\sim} \mathrm{N}(0, \sigma^{2})
+% \end{equation}
+
+% --- Examples of citing references (using natbib) ---
+% Parenthetical citation:  \citep{rigatti2017random}
+% Textual citation:        \cite{rigatti2017random}
+% See ProposalRef.bib for adding your own references.
+
+% TODO: Provide a brief literature review or background.
+% Identify relevant prior work, methods, or studies that motivate your approach.
+[PROVIDE BACKGROUND / LITERATURE REVIEW HERE. Discuss any relevant prior work
+or existing studies. What methods have been used before? What are the
+limitations of previous approaches? How does your project build upon or differ
+from this prior work? Cite references as appropriate using
+\texttt{\textbackslash citep\{\}} and \texttt{\textbackslash cite\{\}}.]
+
+% TODO: Clearly state the objectives of your project.
+[STATE YOUR PROJECT OBJECTIVES HERE. Summarize the specific goals of your
+analysis in a bulleted or numbered list.]
+
+\begin{itemize}
+    \item[1.] [OBJECTIVE 1: e.g., Build a predictive model for \ldots]
+    \begin{itemize}
+        \item [Sub-goal 1a]
+        \item [Sub-goal 1b]
+    \end{itemize}
+    \item[2.] [OBJECTIVE 2: e.g., Compare the performance of \ldots]
+\end{itemize}
+
+
+%% ============================================================
+%% SECTION 2: RESEARCH STRATEGY
+%% This section should cover:
+%%   - A detailed description of the data
+%%   - The statistical analysis plan
+%% ============================================================
+\section{Research Strategy}\label{sec:research}
+
+\subsection{Data}
+
+% TODO: Provide a detailed description of your data set.
+% Include information such as: source, sample size, variables, data types,
+% any preprocessing or cleaning needed, and any known issues or limitations.
+[DESCRIBE YOUR DATA IN DETAIL HERE. Discuss the source, how it was collected,
+the sample size, the variables of interest (response variable and predictors),
+data types, any missing data, and any preprocessing steps you plan to take.
+If you have preliminary exploratory data analysis (EDA), include summary
+statistics or initial visualizations.]
+
+% --- Example of including a figure (kept from the template for reference) ---
+% Replace Trace.pdf with your own figure file.
+% \begin{figure}[h!]
+% \centering
+% \includegraphics[width=0.45\textwidth]{your_figure.pdf}
+% \caption{[DESCRIBE YOUR FIGURE HERE]}
+% \label{fig:your_label}
+% \end{figure}
+
+% TODO: If you have a figure to include, uncomment the block above and
+% replace the filename and caption. You can reference it in the text
+% with \ref{fig:your_label}.
+
+\subsection{Planned Analysis}
+
+% TODO: Describe the statistical methods and analysis plan you intend to use.
+% Be specific about models, techniques, software, and evaluation criteria.
+[DESCRIBE YOUR STATISTICAL ANALYSIS PLAN HERE. What statistical methods do
+you plan to use (e.g., linear regression, logistic regression, time series
+analysis, random forests, clustering, etc.)? Why are these methods appropriate
+for your data and research questions? Describe any model assumptions, how you
+will check them, and how you will evaluate model performance (e.g.,
+cross-validation, AIC/BIC, residual diagnostics, etc.).]
+
+% TODO: Describe any additional analyses or extensions you plan to explore.
+[DESCRIBE ANY ADDITIONAL ANALYSES HERE. For example, do you plan to compare
+multiple models? Perform variable selection? Conduct sensitivity analyses?
+Discuss how the results will be interpreted and presented.]
+
+
+%% ============================================================
+%% BIBLIOGRAPHY
+%% Add your references to ProposalRef.bib in BibTeX format.
+%% The template uses the chicago bibliography style.
+%% ============================================================
+\bibliographystyle{chicago}
+\bibliography{ProposalRef.bib}
+
+\end{document}
