@@ -19,8 +19,8 @@
 
 | # | Topic | Summary | Data Source | Methods / Notes |
 |---|-------|---------|-------------|-----------------|
-| 1 | | | | |
-| 2 | | | | |
+| 1 | **Predicting Stock Volatility Across Sectors** | Model daily stock price volatility (e.g., intraday range or rolling standard deviation of returns) as a function of sector, trading volume, and lagged price features using 120 major US companies. Investigate whether certain sectors exhibit systematically higher volatility and how volume shocks propagate across time. | [US Stock Market Historical OHLCV Dataset](https://www.kaggle.com/datasets/asadullahcreative/us-stock-market-historical-ohlcv-dataset) — 184K daily records, 120 companies, 9 sectors. | Time-series regression, GARCH-type volatility modeling, sector fixed effects, rolling-window feature engineering. Could extend with cross-sector correlation analysis or regime-switching models. |
+| 2 | **Predicting Heart Disease Risk from Patient Health Indicators** | Build a classification model to predict the presence of heart disease using demographic, behavioral, and clinical features (BMI, smoking status, physical activity, diabetes, etc.) from a large CDC survey sample. Explore which risk factors are the strongest predictors and whether interactions (e.g., age × diabetes) improve prediction. | [Heart Disease Health Indicators — BRFSS 2015](https://www.kaggle.com/datasets/alexteboul/heart-disease-health-indicators-dataset) — ~250K survey respondents, 22 features, binary outcome. | Logistic regression with variable selection, ROC/AUC evaluation, interaction terms, possible comparison with tree-based methods (random forest, gradient boosting). |
 
 ---
 
