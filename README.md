@@ -1,0 +1,2 @@
+# STAT482
+Capstone for STATISTICS 482
