@@ -41,8 +41,3 @@
 | 2 | | | | |
 
 ---
-
-## Notes
-- Each member should add **at least 2 topic ideas** with a brief summary, data source, and potential methods.
-- We'll discuss and pick one topic for the final proposal.
-- Remember: the proposal needs a clear **research question**, a **data set**, and a **statistical analysis plan**.
