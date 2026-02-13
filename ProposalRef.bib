@@ -1,63 +1,43 @@
 % ============================================================
-% ProposalRef.bib
-% ============================================================
-% Add your BibTeX references here.
-% Use \citep{key} for parenthetical citations and \cite{key} for textual citations.
-%
-% Below are example entries showing common reference types.
-% Replace or add your own references as needed.
+% ProposalRef.bib — Baseball Pitch Analysis References
 % ============================================================
 
-% --- Example: Journal Article ---
-@article{rigatti2017random,
-  title={Random forest},
-  author={Rigatti, Steven J},
-  journal={Journal of Insurance Medicine},
-  volume={47},
-  number={1},
-  pages={31--39},
-  year={2017},
-  publisher={American Academy of Insurance Medicine}
+% --- Statcast / Baseball Savant ---
+@misc{statcast2024,
+  title        = {Statcast Search},
+  author       = {{Major League Baseball}},
+  year         = {2024},
+  howpublished = {\url{https://baseballsavant.mlb.com/statcast_search}},
+  note         = {Pitch-by-pitch tracking data for all MLB games}
 }
 
-% --- Example: Book ---
-@book{adams1995hitchhiker,
-  title={The Hitchhiker's Guide to the Galaxy},
-  author={Adams, D.},
-  isbn={9781417642595},
-  year={1995},
-  publisher={San Val}
+% --- pybaseball module ---
+@misc{pybaseball,
+  title        = {pybaseball: Pull baseball data in Python},
+  author       = {Peta, James and {Contributors}},
+  year         = {2024},
+  howpublished = {\url{https://github.com/jldbc/pybaseball}},
+  note         = {Python package for accessing Statcast, FanGraphs, and Baseball Reference data}
 }
 
-% TODO: Add your own references below in BibTeX format.
-% You can find BibTeX entries on Google Scholar (click "Cite" -> "BibTeX")
-% or from journal websites.
-%
-% Example templates:
-%
-% @article{key,
-%   title={},
-%   author={},
-%   journal={},
-%   volume={},
-%   number={},
-%   pages={},
-%   year={},
-%   publisher={}
-% }
-%
-% @book{key,
-%   title={},
-%   author={},
-%   year={},
-%   publisher={}
-% }
-%
-% @inproceedings{key,
-%   title={},
-%   author={},
-%   booktitle={},
-%   pages={},
-%   year={},
-%   organization={}
-% }
+% --- Generalized Linear Models (Standard Reference) ---
+@book{mccullagh2019generalized,
+  title     = {Generalized linear models},
+  author    = {McCullagh, Peter and Nelder, John A},
+  year      = {2019},
+  publisher = {Routledge}
+}
+
+% --- Mixed Effects Models (Standard Reference) ---
+@book{gelman2006data,
+  title     = {Data analysis using regression and multilevel/hierarchical models},
+  author    = {Gelman, Andrew and Hill, Jennifer},
+  year      = {2006},
+  publisher = {Cambridge university press}
+}
+
+% TODO: Everyone — Add more references as you write your sections.
+% Look for papers on:
+%   - Pitch tunneling (e.g., Toporek, FanGraphs articles)
+%   - Mixed-effects models in sports (GLMMs)
+%   - "Stuff+" metrics (Pitching Ninja, FanGraphs)
