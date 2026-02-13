@@ -46,7 +46,6 @@ In such models, the probability of a swing-and-miss, $p_i = P(Y_i=1)$, is typica
     + \beta_3 \,\texttt{HB}_i
     + \beta_4 \,\texttt{Ext}_i
     + \beta_5 \,\texttt{Arm}_i
-    + \beta_5 \,\texttt{Arm}_i
 \end{equation}
 %
 where $\texttt{IVB}$ denotes induced vertical break, $\texttt{HB}$ horizontal break, $\texttt{Ext}$ release extension, and $\texttt{Arm}$ arm angle.
@@ -70,7 +69,7 @@ To investigate this, we propose the following objectives:
 
 \begin{enumerate}[leftmargin=3em, label=\textbf{\arabic*.}]
     \item \textbf{Pitch Sequence Effects:} Investigate whether the previous pitch type and result significantly affect the whiff probability of the current pitch. We believe that specific sequence combinations (e.g., Fastball $\rightarrow$ Slider) will show significant interaction effects.
-    \item \textbf{Differentiate between batter skill and Pitch quality:} Implement a Generalized Linear Mixed Model (GLMM) where individual batters are treated as random effects. This will help separate the variance attributable to the pitch from the variance attributable to the batter's skill.
+    \item \textbf{Differentiate between Batter skill and Pitch quality:} Implement a Generalized Linear Mixed Model (GLMM) where individual batters are treated as random effects. This will help separate the variance attributable to the pitch from the variance attributable to the batter's skill.
     \item \textbf{Prediction Power:} Evaluate whether the Sequencing and Mixed-Effects models provide a better fit and have more predictive power compared to the baseline metrics that a single pitch provides. 
 \end{enumerate}
 %%==============================================================
