@@ -76,6 +76,44 @@ To investigate this, we propose the following objectives:
 \section{Research Strategy}
 %%==============================================================
 \subsection{Data}
+%%==============================================================
+We utilize pitch-by-pitch data from the 2024 Major League Baseball (MLB) season obtained from the Statcast database via the \texttt{pybaseball} Python module \citep{statcast2024,pybaseball2024}. 
+Statcast provides high-resolution tracking data for every pitch thrown in MLB games, including measurements of velocity, spin, movement, release characteristics, and pitch outcomes. 
+Our unit of observation is an individual pitch.
+
+For each pitch $i$, we define a binary outcome:
+\[
+Y_i =
+\begin{cases}
+1 & \text{if the batter swings and misses (whiff)}, \\
+0 & \text{otherwise.}
+\end{cases}
+\]
+Thus, $p_i = P(Y_i = 1)$ represents the probability of a swing-and-miss on pitch $i$.
+We group predictors into three categories:
+
+\textbf{(1) Physical Pitch Characteristics}
+\begin{itemize}
+    \item $\texttt{Speed}_i$: Release velocity (mph)
+    \item $\texttt{IVB}_i$: Induced vertical break
+    \item $\texttt{HB}_i$: Horizontal break
+    \item $\texttt{Ext}_i$: Release extension (feet)
+    \item $\texttt{Arm}_i$: Arm angle at release
+\end{itemize}
+
+\textbf{(2) Sequencing Variables}
+\begin{itemize}
+    \item Previous pitch type
+    \item Previous pitch location
+    \item Previous pitch outcome
+    \item Interactions between current and previous pitch types
+\end{itemize}
+
+\textbf{(3) Batter-Specific Effects}
+
+To account for heterogeneity in contact ability and baseline swing-and-miss tendencies, batter identity is incorporated as a random effect within a generalized linear mixed model (GLMM). 
+This allows us to separate variance attributable to pitch characteristics from variance attributable to batter skill.
+
 %% --- NICK & HECTOR: Write this subsection together ---
 %%
 %% Nick: Write the description of data source and variables.
