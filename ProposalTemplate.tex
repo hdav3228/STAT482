@@ -28,8 +28,15 @@
 %%==============================================================
 \section{Introduction}
 %%==============================================================
-The rise of advanced tracking systems in Major League Baseball (MLB) has fundamentally transformed how teams evaluate pitching performance. Since the introduction of Statcast in 2015, every pitch thrown in an MLB game is measured with unprecedented precision---release speed, spin rate, movement profile, release point, and extension are all captured at the sub-millisecond level \citep{statcast2024}. This wealth of data has fueled a revolution in pitcher development, with front offices investing heavily in pitch design laboratories and data-driven coaching programs aimed at maximizing the effectiveness of each pitch in a pitcher's arsenal.
-A central question in modern baseball analytics is: \textit{what attributes make a pitch difficult to hit?} Intuitively, pitches with higher velocity, greater movement, and longer extension should be more effective. However, standard logistic regression models that predict swing-and-miss probability based solely on these physical characteristics often yield inconclusive results. In such models, the probability of a whiff, $p_i = P(Y_i=1)$, is typically modeled as:
+The rise of advanced tracking systems in all sports, especially Major League Baseball (MLB) has transformed how teams evaluate pitching performance and decide on their pitching strategy. 
+Since the introduction of Statcast in 2015, every pitch thrown in any MLB game has been measured through many different metrics such as release speed, spin rate, movement profile, release point, and extension. 
+All these metrics are captured at the millisecond \citep{statcast2024}. 
+This sudden increase in analytics has led to massive changes in pitcher development, with front offices investing heavily in how pitchers are drafted and managed throughout their tenure. 
+All of this is done to maximize the effectiveness of each pitch in a pitcher's arsenal.
+This leads to the central question in baseball analytics: \textit{what attributes make a pitch difficult to hit?} 
+Intuitively, batters and most baseball watchers agree that pitches with higher velocity, greater movement, and longer extension are harder to hit.
+However, standard logistic regression models that predict swing-and-miss probability based solely on these physical characteristics often lead to inconclusive results. 
+In such models, the probability of a swing-and-miss, $p_i = P(Y_i=1)$, is typically described as:
 %
 \begin{equation}\label{eq:baseline}
     \log\!\left(\frac{p_i}{1 - p_i}\right)
@@ -39,12 +46,18 @@ A central question in modern baseball analytics is: \textit{what attributes make
     + \beta_3 \,\texttt{HB}_i
     + \beta_4 \,\texttt{Ext}_i
     + \beta_5 \,\texttt{Arm}_i
-    + \epsilon_i
+    + \beta_5 \,\texttt{Arm}_i
 \end{equation}
 %
-where $\texttt{IVB}$ denotes induced vertical break, $\texttt{HB}$ horizontal break, $\texttt{Ext}$ release extension, and $\texttt{Arm}$ arm angle. Previous studies have found that main effects and simple interactions in this framework are often statistically insignificant or fail to explain a substantial portion of the variance in outcomes. The limitation of this approach is that it treats each pitch as an independent, context-free event, ignoring two critical sources of variation: \textbf{sequencing} and \textbf{batter heterogeneity}.
-First, pitches are part of a strategic sequence. A pitch's effectiveness is often determined not by its raw metrics, but by how well it tunnels with the preceding pitch. For example, a breaking ball may induce more whiffs when it follows a fastball due to the disruption in batter timing and visual processing---a phenomenon known as ``pitch tunneling.'' Second, batters differ significantly in their baseline contact rates. Elite contact hitters rarely swing and miss regardless of pitch quality, while high-strikeout batters may whiff at average pitches. Neglecting these batter-specific tendencies introduces substantial noise into the analysis, obscuring the true relationship between pitch quality and outcomes.
-To address these limitations, we propose a refined modeling framework that explicitly incorporates pitch sequencing and batter-specific adjustments. Our research integrates lagged pitch information to capture sequencing effects and employs hierarchical modeling to account for batter-level variability. Specifically, our research question is:
+where $\texttt{IVB}$ denotes induced vertical break, $\texttt{HB}$ horizontal break, $\texttt{Ext}$ release extension, and $\texttt{Arm}$ arm angle.
+Previous such studies have also found that main effects and simple interactions in this framework are often statistically insignificant or fail to explain the variance in outcomes. 
+The limitation of this approach is that it treats each pitch as an independent, context-free event, ignoring two critical sources of variation: \textbf{sequencing} and \textbf{batter heterogeneity}.
+First, pitches are part of a strategic sequence. A pitch's effectiveness cannot be explained solely based on its individual metrics, but rather the buildup to that pitch. 
+For example, a breaking ball may induce more whiffs when it follows a fastball due to the disruption in batter timing and visual processing, a phenomenon also known as pitch tunneling.
+Second, batters differ significantly in their baseline contact rates. Elite contact hitters like Shohei Ohtani or Aaron Judge rarely swing and miss regardless of pitch quality, while high-strikeout batters may whiff at average pitches. 
+Neglecting these batter-specific tendencies introduces a lot of noise into the analysis of this dataset, which in turn hinders the conclusions that we can draw about the true relationship between pitch quality and outcomes.
+To address these limitations, we want to propose a refined framework that tackles this issue by incorporating pitch sequencing and batter heterogeneity. 
+Specifically, our research question is:
 
 \needspace{5\baselineskip}
 \begin{quote}
@@ -56,9 +69,9 @@ To address these limitations, we propose a refined modeling framework that expli
 To investigate this, we propose the following objectives:
 
 \begin{enumerate}[leftmargin=3em, label=\textbf{\arabic*.}]
-    \item \textbf{Quantify Sequencing Effects:} Investigate whether the previous pitch type and result significantly affect the whiff probability of the current pitch. We hypothesize that specific sequence combinations (e.g., Fastball $\rightarrow$ Slider) will show significant interaction effects.
-    \item \textbf{Model Batter Heterogeneity:} Implement a Generalized Linear Mixed Model (GLMM) where individual batters are treated as random effects. This approach separates the variance attributable to the pitch from the variance attributable to the batter's skill.
-    \item \textbf{Compare Predictive Performance:} Evaluate whether the Sequencing and Mixed-Effects models provide superior fit and predictive accuracy compared to the baseline pitch-characteristics-only model.
+    \item \textbf{Pitch Sequence Effects:} Investigate whether the previous pitch type and result significantly affect the whiff probability of the current pitch. We believe that specific sequence combinations (e.g., Fastball $\rightarrow$ Slider) will show significant interaction effects.
+    \item \textbf{Differentiate between batter skill and Pitch quality:} Implement a Generalized Linear Mixed Model (GLMM) where individual batters are treated as random effects. This will help separate the variance attributable to the pitch from the variance attributable to the batter's skill.
+    \item \textbf{Prediction Power:} Evaluate whether the Sequencing and Mixed-Effects models provide a better fit and have more predictive power compared to the baseline metrics that a single pitch provides. 
 \end{enumerate}
 %%==============================================================
 \section{Research Strategy}
