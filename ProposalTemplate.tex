@@ -23,7 +23,7 @@
 %%   Harsh Dave        — Introduction (Background & Motivation)  [COMPLETE]
 %%   Nick Griffin      — Data Section (Data Collection & Vars)
 %%   Hector Carrillo   — Data Section (Data Cleaning & EDA)
-%%   Jack Leidlein     — Planned Analysis (Methods & Models)
+%%   Jack Leidlein     — Planned Analysis (Methods & Models)  [COMPLETE]
 %% ============================================================
 %%==============================================================
 \section{Introduction}
@@ -126,7 +126,8 @@ This allows us to separate variance attributable to pitch characteristics from v
 %%   Include a figure (histogram or scatterplot) and a summary table.
 \subsection{Planned Analysis}
 
-We will model the binary outcome, $p_i$, the probability of a swing-and-miss on pitch i, thus our models will be estimated using logistic regression. A standard model predicting $p_i$ based solely on physical pitch characteristics (vector $X_i$), identical to equation (1), serves as the nested baseline for our our models:
+We will model the binary outcome, $p_i$, the probability of a swing-and-miss on pitch i, thus our models will be estimated using logistic regression. 
+A standard model predicting $p_i$ based solely on physical pitch characteristics (vector $X_i$), identical to equation (1), serves as the nested baseline for our our models:
 
 \begin{equation} 
     \begin{gathered}  
@@ -141,13 +142,16 @@ We will model the binary outcome, $p_i$, the probability of a swing-and-miss on 
     \end{gathered} 
 \end{equation}
 
-To address the inconclusive results seen from models purely considering physical characteristics, our first complex model will modify equation (2) to account for the strategy of pitch sequencing common at the highest levels of baseball. We will introduce lagged variables (vector $Z_i$) on the previous pitch type, location, and outcome to capture sequencing, and use interaction effects between current and previous pitch types (vector $T_i * T_{i-1}$) to find the effect of different pitch type sequences. Thus, we estimate this logit Sequencing Model as follows:
+To address the inconclusive results seen from models purely considering physical characteristics, our first complex model will modify equation (2) to account for the strategy of pitch sequencing common at the highest levels of baseball. 
+We will introduce lagged variables (vector $Z_i$) on the previous pitch type, location, and outcome to capture sequencing, and use interaction effects between current and previous pitch types (vector $T_i * T_{i-1}$) to find the effect of different pitch type sequences. Thus, we estimate this logit Sequencing Model as follows:
 
 \begin{equation}
     \text{Sequencing Model: logit}(p_i) = \beta X_i + \gamma Z_{i-1} + \alpha (T_i * T_{i-1})
 \end{equation}
 
-Our second complex model incorporates mixed effects to separate the batter's skill from the pitch itself, hence why we will assign batters as random effects. As previously, it is an expanded model of (2), with the physical pitch characteristics serving as the fixed effects as before. The batter specific random effects (scalar $b_j$) are random intercepts indexed by batter j, with each $b_j$ assumed to be normally distributed with mean 0 and variance $\sigma^2$.  
+Our second complex model incorporates mixed effects to separate the batter's skill from the pitch itself, hence why we will assign batters as random effects. 
+As previously, it is an expanded model of (2), with the physical pitch characteristics serving as the fixed effects as before. 
+The batter specific random effects (scalar $b_j$) are random intercepts indexed by batter j, with each $b_j$ assumed to be normally distributed with mean 0 and variance $\sigma^2$.  
  
 \begin{equation}
       \text{GLMM: logit}(p_i) = \beta X_i + b_j  \text{  where } b_j \sim \mathcal{N}(0, \sigma^2)
