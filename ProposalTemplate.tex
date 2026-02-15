@@ -124,6 +124,14 @@ This allows us to separate variance attributable to pitch characteristics from v
 %%   "Measurements with errors (< 65mph) will be removed..."
 %%   "Lag variables will be constructed within plate appearances..."
 %%   Include a figure (histogram or scatterplot) and a summary table.
+
+%% --- NICK: Data source and variables ---
+\subsubsection{Data source and variables}
+We use pitch-by-pitch Statcast data for the 2024 MLB regular season accessed via the \texttt{pybaseball} package. The response is a binary indicator $Y_i=1$ when the batter swings and misses (whiff) on pitch $i$. Primary predictors are physical pitch characteristics: \texttt{Speed} (mph), \texttt{IVB} (induced vertical break), \texttt{HB} (horizontal break), \texttt{Ext} (release extension), and \texttt{Arm} (arm angle). Sequencing predictors include the previous pitch's type, location, and outcome; batter identity is retained to support mixed-effects modeling. We restrict to regular-season pitches with complete measurements and exclude obvious measurement errors and non-competitive events (e.g., intentional walks).
+
+In practice we map these short names to Statcast columns (for example, \texttt{Speed} -> \texttt{release\_speed}, \texttt{Ext} -> \texttt{release\_extension}, and break measures to the \texttt{pfx\_x}/\texttt{pfx\_z} or induced-break fields) and define a whiff using Statcast's \texttt{description} values (e.g., \texttt{swinging\_strike}, \texttt{swinging\_strike\_blocked}). Lagged sequencing variables are constructed within the same plate appearance (first-pitch lags are treated as missing).
+
+%% --- HECTOR: Data cleaning and EDA to follow ---
 \subsection{Planned Analysis}
 
 We will model the binary outcome, $p_i$, the probability of a swing-and-miss on pitch i, thus our models will be estimated using logistic regression. 
