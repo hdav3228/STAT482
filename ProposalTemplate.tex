@@ -125,6 +125,38 @@ This allows us to separate variance attributable to pitch characteristics from v
 %%   "Lag variables will be constructed within plate appearances..."
 %%   Include a figure (histogram or scatterplot) and a summary table.
 \subsection{Planned Analysis}
+
+We will model the binary outcome, $p_i$, the probability of a swing-and-miss on pitch i, thus our models will be estimated using logistic regression. A standard model predicting $p_i$ based solely on physical pitch characteristics (vector $X_i$), identical to equation (1), serves as the nested baseline for our our models:
+
+\begin{equation} 
+    \begin{gathered}  
+    \log\left(\frac{p_i}{1 - p_i}\right)  
+    = \beta_0 
+    + \beta_1 \texttt{Speed}_i 
+    + \beta_2 \texttt{IVB}_i 
+    + \beta_3 \texttt{HB}_i 
+    + \beta_4 \texttt{Ext}_i 
+    + \beta_5 \texttt{Arm}_i \\ 
+    = \text{logit}(p_i) = \beta X_i 
+    \end{gathered} 
+\end{equation}
+
+To address the inconclusive results seen from models purely considering physical characteristics, our first complex model will modify equation (2) to account for the strategy of pitch sequencing common at the highest levels of baseball. We will introduce lagged variables (vector $Z_i$) on the previous pitch type, location, and outcome to capture sequencing, and use interaction effects between current and previous pitch types (vector $T_i * T_{i-1}$) to find the effect of different pitch type sequences. Thus, we estimate this logit Sequencing Model as follows:
+
+\begin{equation}
+    \text{Sequencing Model: logit}(p_i) = \beta X_i + \gamma Z_{i-1} + \alpha (T_i * T_{i-1})
+\end{equation}
+
+Our second complex model incorporates mixed effects to separate the batter's skill from the pitch itself, hence why we will assign batters as random effects. As previously, it is an expanded model of (2), with the physical pitch characteristics serving as the fixed effects as before. The batter specific random effects (scalar $b_j$) are random intercepts indexed by batter j, with each $b_j$ assumed to be normally distributed with mean 0 and variance $\sigma^2$.  
+ 
+\begin{equation}
+      \text{GLMM: logit}(p_i) = \beta X_i + b_j  \text{  where } b_j \sim \mathcal{N}(0, \sigma^2)
+\end{equation}
+
+To determine if our added parameters accounting for pitch sequencing, interaction effects, and batter heterogeneity significantly improve the fit to the data, we will use Likelihood Ratio Tests (LRTs). We will perform an LRT for comparison of the physical pitch characteristics model (2) with the sequencing model (3), and for the physical pitch characteristics model (2) with the GLMM for batter heterogeneity (4). Then, BIC will be employed to identify the best fitting and most parsimonious of the three models, as (3) and (4) are not nested.
+
+Avoiding model misspesification is critical to the validity of our models, and generating meaningful results. To monitor diagnostics, Variance Inflation Factors (VIFs) will be computed to evaluate possible multicollinearity between predictors, and residual plots will assess the linearity of predictors assumed in each model. To check the normal distribution assumption of the random effects in the GLMM, a Q-Q plot will be used. Other diagnostics will also be explored to test for autocorrelation in the Sequencing Model and overdispersion in the GLMM.
+
 %% --- JACK: Write this subsection ---
 %% Expand on the models defined in the Introduction.
 %%
