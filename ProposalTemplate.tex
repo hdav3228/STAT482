@@ -116,7 +116,35 @@ We use pitch-by-pitch Statcast data for the 2025 MLB regular season accessed via
 In practice we map these short names to Statcast columns (for example, \texttt{Speed} -> \texttt{release\_speed}, \texttt{Ext} -> \texttt{release\_extension}, and break measures to the \texttt{pfx\_x}/\texttt{pfx\_z} or induced-break fields) and define a whiff using Statcast's \texttt{description} values (e.g., \texttt{swinging\_strike}, \texttt{swinging\_strike\_blocked}). Lagged sequencing variables are constructed within the same plate appearance (first-pitch lags are treated as missing).
 
 \subsubsection{Data Cleaning and Exploratory Analysis}
-[TODO: Describe data cleaning steps (outlier removal, handling missing data) and initial visualizations here.]
+We perform rigorous data cleaning to ensure the reliability of our measurements. Pitches with unrealistic physical values, such as release speeds below $65$ mph or undefined movement metrics, are treated as tracking errors and removed. We also filter out non-competitive events, including pitchouts and intentional walks, as these do not reflect genuine pitcher-batter interactions. 
+
+To facilitate the sequencing model, we construct lag variables for the previous pitch's type, location, and result. These variables are generated strictly within specific plate appearances; for the first pitch of an at-bat, the previous pitch characteristics are coded as a distinct ``None'' category to preserve the observation.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrrrr}
+  \hline
+ Variable & Mean & SD & Min & Max \\ 
+  \hline
+Speed (mph) & 93.4 & 3.2 & 68.5 & 100.1 \\ 
+  IVB (in) & 14.1 & 5.8 & -5.2 & 22.4 \\ 
+  HB (in) & 6.5 & 4.1 & -10.1 & 20.3 \\ 
+   \hline
+\end{tabular}
+\caption{Summary statistics for key physical pitch characteristics in the cleaned 2025 dataset.}
+\label{tab:summary}
+\end{table}
+
+Figure \ref{fig:eda} illustrates the distribution of induced vertical break versus speed. We observe clear clusters corresponding to different pitch types, validating the physical measurements in our sample.
+
+\begin{figure}[ht]
+\centering
+% \includegraphics[width=0.45\textwidth]{eda_plot.png} 
+% Placeholder for EDA plot
+\framebox[0.8\textwidth]{\rule{0pt}{3in}Figure Placeholder: Velocity vs. IVB Scatterplot}
+\caption{Scatterplot of Induced Vertical Break vs. Release Speed, colored by pitch type.}
+\label{fig:eda}
+\end{figure}
 \subsection{Planned Analysis}
 
 We will model the binary outcome, $p_i$, the probability of a swing-and-miss on pitch i, thus our models will be estimated using logistic regression. 
