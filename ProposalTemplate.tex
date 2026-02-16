@@ -17,14 +17,7 @@
 \date{Spring 2026}
 \begin{document}
 \maketitle
-%% ============================================================
-%% WORK ASSIGNMENTS (for internal reference)
-%% ---------------------------------------------------------
-%%   Harsh Dave        — Introduction (Background & Motivation)  [COMPLETE]
-%%   Nick Griffin      — Data Section (Data Collection & Vars)
-%%   Hector Carrillo   — Data Section (Data Cleaning & EDA)
-%%   Jack Leidlein     — Planned Analysis (Methods & Models)  [COMPLETE]
-%% ============================================================
+
 %%==============================================================
 \section{Introduction}
 %%==============================================================
@@ -114,24 +107,16 @@ We group predictors into three seperate categories:
 To account for heterogeneity in contact ability and baseline swing-and-miss tendencies, batter identity is incorporated as a random effect within a generalized linear mixed model (GLMM). 
 This allows us to separate variance attributable to pitch characteristics from variance attributable to batter skill.
 
-%% --- NICK & HECTOR: Write this subsection together ---
-%%
-%% Nick: Write the description of data source and variables.
-%%   "We will utilize pitch-by-pitch data from the 2024 MLB season obtained via..."
-%%   Describe the response variable (Whiff) and predictors (Velocity, Break, etc.).
-%%
-%% Hector: Write the cleaning and EDA part.
-%%   "Measurements with errors (< 65mph) will be removed..."
-%%   "Lag variables will be constructed within plate appearances..."
-%%   Include a figure (histogram or scatterplot) and a summary table.
 
-%% --- NICK: Data source and variables ---
+
+
 \subsubsection{Data source and variables}
 We use pitch-by-pitch Statcast data for the 2024 MLB regular season accessed via the \texttt{pybaseball} package. The response is a binary indicator $Y_i=1$ when the batter swings and misses (whiff) on pitch $i$. Primary predictors are physical pitch characteristics: \texttt{Speed} (mph), \texttt{IVB} (induced vertical break), \texttt{HB} (horizontal break), \texttt{Ext} (release extension), and \texttt{Arm} (arm angle). Sequencing predictors include the previous pitch's type, location, and outcome; batter identity is retained to support mixed-effects modeling. We restrict to regular-season pitches with complete measurements and exclude obvious measurement errors and non-competitive events (e.g., intentional walks).
 
 In practice we map these short names to Statcast columns (for example, \texttt{Speed} -> \texttt{release\_speed}, \texttt{Ext} -> \texttt{release\_extension}, and break measures to the \texttt{pfx\_x}/\texttt{pfx\_z} or induced-break fields) and define a whiff using Statcast's \texttt{description} values (e.g., \texttt{swinging\_strike}, \texttt{swinging\_strike\_blocked}). Lagged sequencing variables are constructed within the same plate appearance (first-pitch lags are treated as missing).
 
-%% --- HECTOR: Data cleaning and EDA to follow ---
+\subsubsection{Data Cleaning and Exploratory Analysis}
+[TODO: Describe data cleaning steps (outlier removal, handling missing data) and initial visualizations here.]
 \subsection{Planned Analysis}
 
 We will model the binary outcome, $p_i$, the probability of a swing-and-miss on pitch i, thus our models will be estimated using logistic regression. 
@@ -169,18 +154,7 @@ To determine if our added parameters accounting for pitch sequencing, interactio
 
 Avoiding model misspesification is critical to the validity of our models, and generating meaningful results. To monitor diagnostics, Variance Inflation Factors (VIFs) will be computed to evaluate possible multicollinearity between predictors, and residual plots will assess the linearity of predictors assumed in each model. To check the normal distribution assumption of the random effects in the GLMM, a Q-Q plot will be used. Other diagnostics will also be explored to test for autocorrelation in the Sequencing Model and overdispersion in the GLMM.
 
-%% --- JACK: Write this subsection ---
-%% Expand on the models defined in the Introduction.
-%%
-%% 1. Define the Sequencing Model formally:
-%%      logit(p) = \beta X + \gamma Z_{lag} + \alpha (Type * Type_{lag})
-%%
-%% 2. Define the GLMM formally:
-%%      logit(p) = \beta X + b_j  where b_j ~ N(0, \sigma^2)
-%%
-%% 3. Discuss model comparison (AIC, BIC, Likelihood Ratio Tests).
-%% 4. Discuss diagnostics (VIF for multicollinearity, residual plots).
-%%==============================================================
+
 %% BIBLIOGRAPHY
 %%==============================================================
 \nocite{*}
