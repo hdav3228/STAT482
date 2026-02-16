@@ -70,8 +70,8 @@ To investigate this, we propose the following objectives:
 %%==============================================================
 \subsection{Data}
 %%==============================================================
-We will utilize pitch-by-pitch data from the 2024 Major League Baseball (MLB) season obtained from the Statcast database via the \texttt{pybaseball} Python module. 
-Statcast provides high-resolution tracking data for every pitch thrown in MLB games, including measurements of velocity, spin, movement, release characteristics, and pitch outcomes. 
+We will utilize pitch-by-pitch data from the 2025 Major League Baseball (MLB) season obtained from the Statcast database via the \texttt{pybaseball} Python module. 
+Statcast provides high-resolution tracking data for every pitch thrown in MLB games.
 Our unit of observation is an individual pitch.
 
 For each pitch $i$, we define a binary outcome:
@@ -83,15 +83,16 @@ Y_i =
 \end{cases}
 \]
 Thus, $p_i = P(Y_i = 1)$ represents the probability of a swing-and-miss on pitch $i$.
-We group predictors into three seperate categories:
+
+We group predictors into three separate categories:
 
 \textbf{(1) Physical Pitch Characteristics}
 \begin{itemize}
-    \item $\texttt{Speed}_i$: Release velocity (mph)
-    \item $\texttt{IVB}_i$: Induced vertical break
-    \item $\texttt{HB}_i$: Horizontal break
-    \item $\texttt{Ext}_i$: Release extension (feet)
-    \item $\texttt{Arm}_i$: Arm angle at release
+    \item \texttt{Speed} ($\to$ \texttt{release\_speed}): Release velocity (mph)
+    \item \texttt{IVB} ($\to$ \texttt{pfx\_z}): Induced vertical break
+    \item \texttt{HB} ($\to$ \texttt{pfx\_x}): Horizontal break
+    \item \texttt{Ext} ($\to$ \texttt{release\_extension}): Release extension (feet)
+    \item \texttt{Arm}: Arm angle at release
 \end{itemize}
 
 \textbf{(2) Sequencing Variables}
@@ -105,15 +106,8 @@ We group predictors into three seperate categories:
 \textbf{(3) Batter-Specific Effects}
 
 To account for heterogeneity in contact ability and baseline swing-and-miss tendencies, batter identity is incorporated as a random effect within a generalized linear mixed model (GLMM). 
-This allows us to separate variance attributable to pitch characteristics from variance attributable to batter skill.
 
-
-
-
-\subsubsection{Data source and variables}
-We use pitch-by-pitch Statcast data for the 2025 MLB regular season accessed via the \texttt{pybaseball} package. The response is a binary indicator $Y_i=1$ when the batter swings and misses (whiff) on pitch $i$. Primary predictors are physical pitch characteristics: \texttt{Speed} (mph), \texttt{IVB} (induced vertical break), \texttt{HB} (horizontal break), \texttt{Ext} (release extension), and \texttt{Arm} (arm angle). Sequencing predictors include the previous pitch's type, location, and outcome; batter identity is retained to support mixed-effects modeling. We restrict to regular-season pitches with complete measurements and exclude obvious measurement errors and non-competitive events (e.g., intentional walks).
-
-In practice we map these short names to Statcast columns (for example, \texttt{Speed} $\to$ \texttt{release\_speed}, \texttt{Ext} $\to$ \texttt{release\_extension}, and break measures to the \texttt{pfx\_x}/\texttt{pfx\_z} or induced-break fields) and define a whiff using Statcast's \texttt{description} values (e.g., \texttt{swinging\_strike}, \texttt{swinging\_strike\_blocked}). Lagged sequencing variables are constructed within the same plate appearance (first-pitch lags are treated as missing).
+In practice, we define a whiff using Statcast's \texttt{description} values (e.g., \texttt{swinging\_strike}, \texttt{swinging\_strike\_blocked}). Lagged sequencing variables are constructed within the same plate appearance (first-pitch lags are treated as missing). We restrict to regular-season pitches with complete measurements and exclude obvious measurement errors and non-competitive events (e.g., intentional walks).
 
 \subsubsection{Data Cleaning and Exploratory Analysis}
 We perform rigorous data cleaning to ensure the reliability of our measurements. Pitches with unrealistic physical values, such as release speeds below $65$ mph or undefined movement metrics, are treated as tracking errors and removed. We also filter out non-competitive events, including pitchouts and intentional walks, as these do not reflect genuine pitcher-batter interactions. 
