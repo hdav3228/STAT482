@@ -328,3 +328,5 @@ TSWLatexianTemp*
 # Project specific ignores
 TopicIdeas.md
 .DS_Store
+data/
+supplemental info/
