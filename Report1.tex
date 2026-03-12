@@ -16,16 +16,16 @@
 
 % ============================================================
 % EASY-TO-UPDATE STATISTICS
-% After running code/eda_analysis.R, replace these values
+% After running code/eda_analysis.py, replace these values
 % with the numbers printed to the console.
 % ============================================================
-\newcommand{\totalRaw}{713{,}842}        % raw pitches before cleaning
-\newcommand{\totalPitches}{685{,}247}    % pitches after cleaning
-\newcommand{\overallWhiff}{26.3}         % overall whiff rate (%)
-\newcommand{\numBatters}{892}            % unique batters (>= 200 pitches)
-\newcommand{\numPitchers}{784}           % unique pitchers
-\newcommand{\batterLow}{8.4}             % lowest batter whiff rate (%)
-\newcommand{\batterHigh}{42.1}           % highest batter whiff rate (%)
+\newcommand{\totalRaw}{711{,}897}        % raw pitches before cleaning
+\newcommand{\totalPitches}{702{,}384}    % pitches after cleaning
+\newcommand{\overallWhiff}{12.0}         % overall whiff rate (%)
+\newcommand{\numBatters}{531}            % unique batters (>= 200 pitches)
+\newcommand{\numPitchers}{811}           % unique pitchers
+\newcommand{\batterLow}{2.4}             % lowest batter whiff rate (%)
+\newcommand{\batterHigh}{23.2}           % highest batter whiff rate (%)
 % ============================================================
 
 \title{\textbf{Modeling the Effect of Pitch Sequencing and\\
@@ -159,13 +159,14 @@ After cleaning, our working dataset contains \totalPitches{} pitches with an ove
 %%==============================================================
 
 Before proceeding to formal modeling, we conduct an exploratory analysis to characterize the key patterns in the data and motivate our modeling choices.
-All analysis and visualization is performed in R \citep{rlang2024} using the \texttt{ggplot2} package \citep{wickham2016ggplot2}.
+All analysis and visualization is performed in Python using the \texttt{matplotlib} \citep{matplotlib2007} and \texttt{seaborn} \citep{seaborn2021} libraries.
 
 \subsection{Summary Statistics}
 
 Table~\ref{tab:summary} presents descriptive statistics for the four primary physical pitch characteristics.
-Release speed has a mean around 93 mph with moderate variability, consistent with the mix of fastballs and off-speed pitches in a typical MLB game.
-Induced vertical break and horizontal break both exhibit substantial ranges, reflecting the diversity of pitch types in the dataset.
+Release speed has a mean of approximately 90 mph with a standard deviation of 5.8 mph, reflecting the mix of fastballs (mid-to-upper 90s) and off-speed pitches (low-to-mid 80s) in a typical MLB game.
+Induced vertical break averages 6.9 inches but spans a wide range ($-$24.0 to 27.5 in.), capturing the contrast between pitches with heavy topspin (negative IVB, such as curveballs) and those with strong backspin (positive IVB, such as four-seam fastballs).
+Horizontal break also exhibits substantial variability (SD = 10.8 in.), reflecting the diversity of arm angles and pitch types in the dataset.
 
 \begin{table}[H]
 \centering
@@ -173,10 +174,10 @@ Induced vertical break and horizontal break both exhibit substantial ranges, ref
 \toprule
 Variable & Mean & SD & Min & Max \\
 \midrule
-Release Speed (mph)           & 93.4 & 5.1 & 65.2 & 104.8 \\
-Induced Vertical Break (in.)  & 14.1 & 5.8 & $-$18.5 & 24.2 \\
-Horizontal Break (in.)        & 6.5  & 8.3 & $-$22.1 & 24.7 \\
-Release Extension (ft)        & 6.3  & 0.5 & 4.2 & 7.8 \\
+Release Speed (mph)           & 89.5 & 5.8 & 65.2 & 104.2 \\
+Induced Vertical Break (in.)  & 6.9 & 8.6 & $-$24.0 & 27.5 \\
+Horizontal Break (in.)        & $-$1.6  & 10.8 & $-$29.4 & 30.5 \\
+Release Extension (ft)        & 6.4  & 0.4 & 3.9 & 9.6 \\
 \bottomrule
 \end{tabular}
 \caption{Summary statistics for key physical pitch characteristics in the cleaned 2025 dataset.}
@@ -187,8 +188,9 @@ Release Extension (ft)        & 6.3  & 0.5 & 4.2 & 7.8 \\
 
 Not all pitch types are equally effective at generating swing-and-miss outcomes.
 Figure~\ref{fig:whiff_type} displays the whiff rate for each pitch type in the dataset.
-Breaking balls (sliders, sweepers, and curveballs) and off-speed pitches (changeups and splitters) tend to produce higher whiff rates than fastball variants (four-seam, sinker, cutter).
-This is expected, as off-speed and breaking pitches are typically designed to deceive the batter through movement and speed differential rather than pure velocity.
+Splitters lead with the highest whiff rate (17.8\%), followed closely by knuckle-curves (16.4\%) and sliders (16.2\%).
+Off-speed and breaking pitches consistently outperform fastball variants: the three highest-whiff-rate pitch types are all non-fastball pitches, while sinkers produce the lowest whiff rate at just 6.3\%.
+This pattern is expected, as off-speed and breaking pitches are designed to deceive the batter through movement and speed differential rather than pure velocity.
 Table~\ref{tab:whiff_type} provides the corresponding counts.
 
 \begin{figure}[H]
@@ -204,15 +206,15 @@ Table~\ref{tab:whiff_type} provides the corresponding counts.
 \toprule
 Pitch Type & Total Pitches & Whiffs & Whiff Rate (\%) \\
 \midrule
-Splitter      & 24,318  & 8,634  & 35.5 \\
-Slider        & 102,487 & 34,846 & 34.0 \\
-Sweeper       & 68,214  & 22,508 & 33.0 \\
-Changeup      & 58,943  & 18,276 & 31.0 \\
-Curveball     & 52,176  & 15,653 & 30.0 \\
-Knuckle-Curve & 18,752  & 5,438  & 29.0 \\
-Cutter        & 48,563  & 11,655 & 24.0 \\
-4-Seam FB     & 218,946 & 48,168 & 22.0 \\
-Sinker        & 92,848  & 13,927 & 15.0 \\
+Splitter      & 23,131  & 4,119  & 17.8 \\
+Knuckle-Curve & 12,081  & 1,983  & 16.4 \\
+Slider        & 104,622 & 16,964 & 16.2 \\
+Changeup      & 72,963  & 11,368 & 15.6 \\
+Sweeper       & 50,918  & 7,284  & 14.3 \\
+Curveball     & 48,248  & 6,176  & 12.8 \\
+Cutter        & 53,896  & 5,903  & 11.0 \\
+4-Seam FB     & 225,957 & 23,830 & 10.5 \\
+Sinker        & 110,568 & 6,952  & 6.3 \\
 \bottomrule
 \end{tabular}
 \caption{Whiff rates by pitch type in the 2025 MLB regular season.}
@@ -224,8 +226,10 @@ Sinker        & 92,848  & 13,927 & 15.0 \\
 Figure~\ref{fig:phys_dist} compares the distributions of release speed, induced vertical break, horizontal break, and release extension between whiff and non-whiff outcomes.
 Several patterns emerge.
 Pitches that result in whiffs tend to have slightly lower average release speeds, mainly because breaking balls and off-speed pitches---which are thrown at lower velocities---generate whiffs at higher rates.
-The vertical break distributions show a shift toward lower values for whiffs, consistent with the prevalence of sliders and curveballs (which break downward) among swing-and-miss pitches.
-These distributional differences, while visible, are not dramatic for any single variable in isolation, reinforcing the need for multivariate modeling.
+The induced vertical break distribution for whiffs is shifted toward lower (and more negative) values compared to non-whiffs, consistent with the prevalence of sliders, sweepers, and curveballs---pitches with downward break---among swing-and-miss outcomes.
+The horizontal break distribution for whiffs shows heavier tails, reflecting the extreme lateral movement of sliders and sweepers.
+Release extension distributions are largely overlapping between the two groups.
+Overall, these distributional differences, while visible, are not dramatic for any single variable in isolation, reinforcing the need for multivariate modeling.
 
 \begin{figure}[H]
     \centering
@@ -239,10 +243,11 @@ These distributional differences, while visible, are not dramatic for any single
 A central hypothesis of this study is that pitch effectiveness depends on the preceding pitch.
 Figure~\ref{fig:seq_heatmap} presents a heatmap of whiff rates organized by previous pitch type (rows) and current pitch type (columns).
 Several noteworthy patterns are visible.
-Breaking balls thrown after fastballs (e.g., fastball $\rightarrow$ slider, fastball $\rightarrow$ sweeper) consistently show elevated whiff rates compared to their marginal averages.
-This finding is consistent with the pitch tunneling hypothesis: when consecutive pitches appear similar out of the pitcher's hand but diverge in trajectory near the plate, the batter's ability to adjust is compromised.
-Conversely, fastballs thrown after breaking balls tend to have lower whiff rates, suggesting that batters may sit on velocity after seeing off-speed pitches.
-These findings strongly motivate the inclusion of sequencing variables in the logistic regression model specified in Equation~(1).
+Splitters and knuckle-curves thrown after curveballs achieve the highest whiff rates in the heatmap (20.1\% and 19.9\%, respectively), suggesting that batters struggle to adjust to a second consecutive breaking ball with different movement profiles.
+Sequences from sinkers or four-seam fastballs to splitters also produce elevated whiff rates (19.2\% and 16.0\%), consistent with the pitch tunneling hypothesis: when consecutive pitches appear similar out of the pitcher's hand but diverge in trajectory near the plate, the batter's ability to adjust is compromised.
+Conversely, sinkers preceded by any pitch type consistently show the lowest column-wise whiff rates (5.7\%--8.5\%), suggesting that batters find sinkers easier to put in play regardless of sequence.
+Fastball variants (four-seam fastballs, cutters) thrown after breaking balls tend to have relatively moderate whiff rates (10--13\%), suggesting that batters may sit on velocity after seeing off-speed pitches.
+These findings strongly motivate the inclusion of sequencing variables and pitch-type interaction terms in the logistic regression model specified in Equation~(\ref{eq:baseline}).
 
 \begin{figure}[H]
     \centering
@@ -268,10 +273,11 @@ This variability confirms that batter identity is an important grouping factor a
 \subsection{Predictor Correlations}
 
 Figure~\ref{fig:corr} presents the pairwise correlations among the continuous predictors and the binary whiff outcome.
-Release speed and induced vertical break are positively correlated, largely because high-velocity fastballs also tend to have higher vertical break.
-Horizontal break shows weaker correlations with the other predictors.
-None of the individual correlations with the whiff outcome are strong in magnitude, which is consistent with our earlier observation that no single physical characteristic is a dominant predictor of swing-and-miss outcomes.
-The relatively modest inter-predictor correlations suggest that multicollinearity is unlikely to be a concern in the logistic regression models.
+The most notable inter-predictor relationship is between release speed and induced vertical break ($r = 0.72$), which is expected because high-velocity fastballs generate strong backspin and thus higher vertical break.
+This substantial correlation warrants monitoring via Variance Inflation Factors (VIFs) in the modeling stage to guard against multicollinearity.
+Release speed and horizontal break are negatively correlated ($r = -0.30$), reflecting the tendency for slower breaking pitches to exhibit greater lateral movement.
+Critically, none of the individual correlations with the whiff outcome exceed $|r| = 0.05$ in magnitude---release speed ($r = -0.05$), IVB ($r = -0.04$), HB ($r = 0.02$), and extension ($r = 0.01$)---confirming that no single physical characteristic is a dominant predictor of swing-and-miss outcomes.
+This reinforces the need for richer models that incorporate sequencing and batter heterogeneity.
 
 \begin{figure}[H]
     \centering
@@ -285,10 +291,10 @@ The relatively modest inter-predictor correlations suggest that multicollinearit
 %%==============================================================
 
 The exploratory analysis reveals several findings that inform our modeling strategy.
-First, whiff rates vary substantially across pitch types, with breaking balls and off-speed pitches generating the most swing-and-miss outcomes.
-Second, pitch sequencing appears to matter: fastball-to-breaking-ball transitions show elevated whiff rates relative to baseline, consistent with the pitch tunneling hypothesis.
-Third, batter-level whiff rates span a wide range, confirming that batter identity is an important source of variation that should be accounted for in modeling.
-Fourth, no single physical pitch characteristic dominates the prediction of whiff outcomes, underscoring the need for multivariate models that incorporate both pitch-level and context-level information.
+First, whiff rates vary substantially across pitch types, ranging from 6.3\% (sinkers) to 17.8\% (splitters), with off-speed and breaking pitches consistently outperforming fastball variants.
+Second, pitch sequencing appears to matter: certain transitions---such as curveball $\rightarrow$ splitter (20.1\%) and sinker $\rightarrow$ knuckle-curve (19.6\%)---produce whiff rates well above their individual pitch-type averages, consistent with the pitch tunneling hypothesis.
+Third, batter-level whiff rates span a wide range (\batterLow\%--\batterHigh\% among batters with $\geq 200$ pitches faced), confirming that batter identity is an important source of variation that should be accounted for in modeling.
+Fourth, no single physical pitch characteristic is strongly correlated with whiff outcomes (all $|r| \leq 0.05$), underscoring the need for multivariate models that incorporate both pitch-level and context-level information.
 
 In the next phase of this project, we will proceed with the three-model framework outlined in the introduction:
 \begin{enumerate}[nosep]
