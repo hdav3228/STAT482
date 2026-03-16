@@ -126,13 +126,10 @@ We organize predictors into three categories:
 \noindent\textbf{(1) Physical Pitch Characteristics.}
 These are the measurable properties of each individual pitch:
 \begin{itemize}[nosep]
-    \item Release Speed (mph): Velocity of the pitch 
-          at the point of release from the pitcher's hand.
-    \item Induced Vertical Break (in.): Vertical movement of 
-          the pitch relative to a theoretical spinless pitch.
-    \item Horizontal Break (in.): Lateral movement of the 
-          pitch relative to a theoretical spinless pitch.
-    \item Release Extension (ft): Distance from the pitcher's plate to where the pitcher releases the       ball.
+    \item Release Speed (mph): Velocity of the pitch at the point of release from the pitcher's hand.
+    \item Induced Vertical Break (in.): Vertical movement of the pitch relative to a theoretical spinless pitch.
+    \item Horizontal Break (in.): Lateral movement of the pitch relative to a theoretical spinless pitch.
+    \item Release Extension (ft): Distance from the pitcher's plate to where the pitcher releases the ball.
 \end{itemize}
 
 \medskip
@@ -150,8 +147,7 @@ For the first pitch of an at-bat, previous-pitch fields are coded as a distinct 
 \medskip
 \noindent\textbf{(3) Batter-Specific Effects.}
 Batters differ substantially in their baseline tendency to swing and miss, independent of pitch quality. 
-To account for this contact heterogeneity without estimating
-\numBatters{} separate fixed coefficients, batter identity will be incorporated as a random effect in the GLMM, 
+To account for this contact heterogeneity without estimating \numBatters{} separate fixed coefficients, batter identity will be incorporated as a random effect in the GLMM, 
 allowing the model to partially pool information across batters and produce shrinkage estimates for those with limited observations.
 
 \subsection{Data Cleaning}
@@ -159,8 +155,7 @@ allowing the model to partially pool information across batters and produce shri
 We apply the following filters to ensure data quality:
 \begin{enumerate}[nosep]
     \item \textbf{Remove non-competitive events:} Pitchouts and intentional balls are excluded, as these pitches are not thrown with the intent to retire the batter and would distort           whiff rate estimates.
-    \item \textbf{Exclude pitches with missing physical measurements:} Pitches with missing physical characteristics such as Release Speed are dropped, as these variables are required
-        predictors in all planned models. 
+    \item \textbf{Exclude pitches with missing physical measurements:} Pitches with missing physical characteristics such as Release Speed are dropped, as these variables are required          predictors in all planned models. 
     \item \textbf{Remove pitches with unrealistic release speeds:} Pitches with a recorded release speed below 65 mph or above 105 mph are removed, as these values fall outside the             physically plausible range for MLB pitchers and are indicative of tracking errors.
     \item \textbf{Restrict to nine most common pitch types:} Only the nine most frequently thrown pitch types are retained, ensuring sufficient observations and reliable inference in           each category- four-seam fastball (FF), sinker (SI), cutter (FC), slider (SL), sweeper (ST), curveball (CU), knuckle-curve (KC), changeup (CH), and splitter (FS).
 \end{enumerate}
