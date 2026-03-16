@@ -154,10 +154,10 @@ allowing the model to partially pool information across batters and produce shri
 
 We apply the following filters to ensure data quality:
 \begin{enumerate}[nosep]
-    \item \textbf{Remove non-competitive events:} Pitchouts and intentional balls are excluded, as these pitches are not thrown with the intent to retire the batter and would distort           whiff rate estimates.
-    \item \textbf{Exclude pitches with missing physical measurements:} Pitches with missing physical characteristics such as Release Speed are dropped, as these variables are required          predictors in all planned models. 
-    \item \textbf{Remove pitches with unrealistic release speeds:} Pitches with a recorded release speed below 65 mph or above 105 mph are removed, as these values fall outside the             physically plausible range for MLB pitchers and are indicative of tracking errors.
-    \item \textbf{Restrict to nine most common pitch types:} Only the nine most frequently thrown pitch types are retained, ensuring sufficient observations and reliable inference in           each category- four-seam fastball (FF), sinker (SI), cutter (FC), slider (SL), sweeper (ST), curveball (CU), knuckle-curve (KC), changeup (CH), and splitter (FS).
+    \item \textbf{Remove non-competitive events:} Pitchouts and intentional balls are excluded, as these pitches are not thrown with the intent to retire the batter and would distort whiff rate estimates.
+    \item \textbf{Exclude pitches with missing physical measurements:} Pitches with missing physical characteristics such as Release Speed are dropped, as these variables are required predictors in all planned models. 
+    \item \textbf{Remove pitches with unrealistic release speeds:} Pitches with a recorded release speed below 65 mph or above 105 mph are removed, as these values fall outside the physically plausible range for MLB pitchers and are indicative of tracking errors.
+    \item \textbf{Restrict to nine most common pitch types:} Only the nine most frequently thrown pitch types are retained, ensuring sufficient observations and reliable inference in each category---four-seam fastball (FF), sinker (SI), cutter (FC), slider (SL), sweeper (ST), curveball (CU), knuckle-curve (KC), changeup (CH), and splitter (FS).
 \end{enumerate}
 After cleaning, our working dataset contains \totalPitches{} pitches with an overall whiff rate of \overallWhiff\%.
 
