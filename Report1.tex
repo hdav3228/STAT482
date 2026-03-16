@@ -98,7 +98,7 @@ In this first report, we describe the dataset, outline our data cleaning procedu
 
 Our dataset consists of pitch-level observations from the 2025 MLB regular season, obtained from the Statcast tracking system via the \texttt{pybaseball} Python module \citep{pybaseball}.
 Statcast uses a combination of radar and optical tracking to record high-resolution measurements for every pitch thrown in MLB games.
-We retrieved approximately \totalRaw{} pitch records spanning the full 2025 regular season (March--September).
+We retrieved approximately \totalRaw{} pitch records spanning the full 2025 regular season (March 27 through September 28), prior to any cleaning or filtering.
 
 \subsection{Unit of Observation and Response Variable}
 
@@ -111,7 +111,12 @@ For each pitch~$i$, we define a binary response variable:
    0 & \text{otherwise}.
    \end{cases}
 \]
-A whiff is identified using the Statcast \texttt{description} field; specifically, we classify a pitch as a whiff when the description is \texttt{swinging\_strike}, \texttt{swinging\_strike\_blocked}, or \texttt{foul\_tip}.
+A whiff is identified using the Statcast \texttt{description} field; specifically, 
+we classify a pitch as a whiff when the description is \texttt{swinging\_strike} 
+(the batter swings and completely misses the pitch), \texttt{swinging\_strike\_blocked} 
+(the batter swings and misses a pitch in the dirt that is blocked by the catcher), 
+or \texttt{foul\_tip} (the batter swings and grazes the pitch directly into 
+the catcher's mitt for a strike).
 
 \subsection{Predictor Variables}
 
@@ -121,36 +126,43 @@ We organize predictors into three categories:
 \noindent\textbf{(1) Physical Pitch Characteristics.}
 These are the measurable properties of each individual pitch:
 \begin{itemize}[nosep]
-    \item \texttt{release\_speed}: Release velocity (mph)
-    \item \texttt{pfx\_z}: Induced vertical break (inches)
-    \item \texttt{pfx\_x}: Horizontal break (inches)
-    \item \texttt{release\_extension}: Release extension toward home plate (feet)
+    \item Release Speed (mph): Velocity of the pitch 
+          at the point of release from the pitcher's hand.
+    \item Induced Vertical Break (in.): Vertical movement of 
+          the pitch relative to a theoretical spinless pitch.
+    \item Horizontal Break (in.): Lateral movement of the 
+          pitch relative to a theoretical spinless pitch.
+    \item Release Extension (ft): Distance from the pitcher's plate to where the pitcher releases the       ball.
 \end{itemize}
 
 \medskip
 \noindent\textbf{(2) Sequencing Variables.}
 To capture the strategic context of each pitch, we construct lagged variables within each plate appearance:
 \begin{itemize}[nosep]
-    \item Previous pitch type (e.g., fastball, slider, changeup)
-    \item Previous pitch zone (Statcast zones 1--14)
-    \item Previous pitch outcome (ball, called strike, swinging strike, foul, in-play)
-    \item Interaction between the current and previous pitch types
+    \item Previous Pitch Type: Statcast pitch type code of the preceding pitch in the plate appearance (e.g., fastball, slider, changeup).
+    \item Previous Pitch Zone: Statcast strike zone region (zones 1--14) in which the preceding pitch was located.
+    \item Previous Pitch Outcome: Result of the preceding pitch, categorized as ball, called strike, swinging strike, foul, or in-play.
+    \item Pitch Type Interaction: Combination of the previous and current pitch types, used to capture sequence-specific effects.
 \end{itemize}
 Lag variables are constructed strictly within the same plate appearance.
 For the first pitch of an at-bat, previous-pitch fields are coded as a distinct ``None'' category to preserve the observation rather than discard it.
 
 \medskip
 \noindent\textbf{(3) Batter-Specific Effects.}
-To account for heterogeneity in contact ability, batter identity will be incorporated as a random effect in the GLMM stage of modeling.
+Batters differ substantially in their baseline tendency to swing and miss, independent of pitch quality. 
+To account for this contact heterogeneity without estimating
+\numBatters{} separate fixed coefficients, batter identity will be incorporated as a random effect in the GLMM, 
+allowing the model to partially pool information across batters and produce shrinkage estimates for those with limited observations.
 
 \subsection{Data Cleaning}
 
 We apply the following filters to ensure data quality:
 \begin{enumerate}[nosep]
-    \item Remove non-competitive events (pitchouts, intentional balls).
-    \item Exclude pitches with missing physical measurements (\texttt{release\_speed}, \texttt{pfx\_x}, \texttt{pfx\_z}, or \texttt{release\_extension}).
-    \item Remove pitches with unrealistic release speeds (below 65 mph or above 105 mph), which indicate tracking errors.
-    \item Restrict to the nine most common pitch types: four-seam fastball (FF), sinker (SI), cutter (FC), slider (SL), sweeper (ST), curveball (CU), knuckle-curve (KC), changeup (CH), and splitter (FS).
+    \item \textbf{Remove non-competitive events:} Pitchouts and intentional balls are excluded, as these pitches are not thrown with the intent to retire the batter and would distort           whiff rate estimates.
+    \item \textbf{Exclude pitches with missing physical measurements:} Pitches with missing physical characteristics such as Release Speed are dropped, as these variables are required
+        predictors in all planned models. 
+    \item \textbf{Remove pitches with unrealistic release speeds:} Pitches with a recorded release speed below 65 mph or above 105 mph are removed, as these values fall outside the             physically plausible range for MLB pitchers and are indicative of tracking errors.
+    \item \textbf{Restrict to nine most common pitch types:} Only the nine most frequently thrown pitch types are retained, ensuring sufficient observations and reliable inference in           each category- four-seam fastball (FF), sinker (SI), cutter (FC), slider (SL), sweeper (ST), curveball (CU), knuckle-curve (KC), changeup (CH), and splitter (FS).
 \end{enumerate}
 After cleaning, our working dataset contains \totalPitches{} pitches with an overall whiff rate of \overallWhiff\%.
 
