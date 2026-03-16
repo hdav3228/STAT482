@@ -303,11 +303,12 @@ Second, pitch sequencing appears to matter: certain transitions---such as curveb
 Third, batter-level whiff rates span a wide range (\batterLow\%--\batterHigh\% among batters with $\geq 200$ pitches faced), confirming that batter identity is an important source of variation that should be accounted for in modeling.
 Fourth, no single physical pitch characteristic is strongly correlated with whiff outcomes (all $|r| \leq 0.05$), underscoring the need for multivariate models that incorporate both pitch-level and context-level information.
 
-In the next phase of this project, we will proceed with the three-model framework outlined in the introduction:
+In the next phase of this project, we will proceed with the model framework outlined in the introduction:
 \begin{enumerate}[nosep]
     \item A \textbf{baseline logistic regression} using physical pitch characteristics only (Equation~\ref{eq:baseline}),
     \item A \textbf{sequencing model} that adds lagged pitch variables and pitch-type interactions, and
     \item A \textbf{GLMM} that incorporates batter random intercepts.
+    \item A \textbf{combined model} that jointly incorporates sequencing (2) and batter random intercepts (3), allowing us to assess whether the two sources of variation, pitch context          and batter heterogeneity, provide complementary explanatory power beyond what either captures alone.
 \end{enumerate}
 We will compare these models using likelihood ratio tests, BIC, and out-of-sample predictive accuracy to determine whether sequencing and batter heterogeneity provide meaningful improvements over the baseline.
 
