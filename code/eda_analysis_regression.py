@@ -365,7 +365,7 @@ def fig_correlation_matrix(df: pd.DataFrame):
     print(f"[FIG] Saved {path}")
 
 # ════════════════════════════════════════════════════════════════════
-#  REGRESSION  
+#  BASELINE REGRESSION  
 # ════════════════════════════════════════════════════════════════════
 
 from sklearn.linear_model import LogisticRegression
@@ -575,7 +575,7 @@ def _bin_zone(zone):
 
 
 # ════════════════════════════════════════════════════════════════════
-#  MAIN REGRESSION FUNCTION
+#  SEQUENCING FUNCTION
 # ════════════════════════════════════════════════════════════════════
 
 def run_sequencing_model(df: pd.DataFrame, seed: int = 42):
