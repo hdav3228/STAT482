@@ -413,6 +413,413 @@ def run_logistic_regression(df: pd.DataFrame):
         print(f"  {name:20s}: {coef: .4f}")
 
     return model
+  
+# ════════════════════════════════════════════════════════════════════
+#  5. SEQUENCING MODEL  (Baseline + Sequencing Model, Eq. 2 & 3)
+# ════════════════════════════════════════════════════════════════════
+#
+#    Baseline (Eq. 2):
+#      logit(p_i) = β X_i
+#      where X_i = [Speed, IVB, HB, Ext]  (physical characteristics)
+#
+#    Sequencing (Eq. 3):
+#      logit(p_i) = β X_i + γ Z_{i-1} + α (T_i * T_{i-1})
+#      where Z_{i-1} = [prev_pitch_type, prev_zone_cat, prev_outcome]
+#            T_i * T_{i-1} = dummy-coded current × previous pitch-type
+#                            interaction
+#
+#  Estimation: Newton-Raphson / IRLS via scipy.optimize.minimize
+#  (L-BFGS-B), which replicates the MLE that statsmodels or R's glm()
+#  would produce.  Standard errors come from the observed Fisher
+#  information (inverse Hessian at the MLE), identical to what glm()
+#  reports as Wald SEs.
+#
+#  Model comparison: Likelihood Ratio Test (χ² with Δdf degrees of
+#  freedom) and BIC
+# ════════════════════════════════════════════════════════════════════
+
+from scipy import optimize, stats
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+
+# ── helpers ──────────────────────────────────────────────────────────
+
+def _sigmoid(z):
+    """Numerically stable sigmoid."""
+    return np.where(z >= 0,
+                    1.0 / (1.0 + np.exp(-z)),
+                    np.exp(z) / (1.0 + np.exp(z)))
+
+
+def _neg_loglik(beta, X, y):
+    """Negative log-likelihood for logistic regression."""
+    p = _sigmoid(X @ beta)
+    # Clip to avoid log(0)
+    p = np.clip(p, 1e-12, 1 - 1e-12)
+    return -np.sum(y * np.log(p) + (1 - y) * np.log(1 - p))
+
+
+def _neg_loglik_grad(beta, X, y):
+    """Gradient of negative log-likelihood."""
+    p = _sigmoid(X @ beta)
+    return X.T @ (p - y)
+
+
+def _fit_logistic(X, y, verbose=False):
+    """
+    Fit logistic regression via L-BFGS-B (equivalent to glm(..., family=binomial)
+    in R).  Returns (beta_hat, se, log_lik, converged).
+
+    Standard errors are derived from the observed Fisher information matrix
+    (inverse Hessian at the MLE), matching the Wald SEs reported by
+    statsmodels.Logit and R's glm().
+    """
+    n, k = X.shape
+    beta0 = np.zeros(k)
+
+    result = optimize.minimize(
+        _neg_loglik,
+        beta0,
+        args=(X, y),
+        jac=_neg_loglik_grad,
+        method="L-BFGS-B",
+        options={"maxiter": 2000, "ftol": 1e-12, "gtol": 1e-8},
+    )
+
+    beta_hat = result.x
+    converged = result.success
+
+    if not converged and verbose:
+        print(f"  [WARN] Optimizer did not fully converge: {result.message}")
+
+    # Observed Fisher information  I = X^T W X  where W = diag(p(1-p))
+    p_hat = _sigmoid(X @ beta_hat)
+    w = p_hat * (1.0 - p_hat)
+    # Clamp weights to avoid near-zero division
+    w = np.clip(w, 1e-10, None)
+    XtWX = (X * w[:, None]).T @ X
+
+    try:
+        cov = np.linalg.inv(XtWX)
+        se = np.sqrt(np.diag(cov))
+    except np.linalg.LinAlgError:
+        # If information matrix is singular, fall back to pseudo-inverse
+        cov = np.linalg.pinv(XtWX)
+        se = np.sqrt(np.abs(np.diag(cov)))
+        if verbose:
+            print("  [WARN] Information matrix singular; using pseudo-inverse for SEs.")
+
+    log_lik = -result.fun
+    return beta_hat, se, log_lik, converged
+
+
+def _build_design_matrix(df, feature_cols, add_intercept=True):
+    """
+    Stack feature columns into a design matrix.
+    All columns must already be numeric (dummies expanded upstream).
+    Returns X as a float64 ndarray.
+    """
+    X = df[feature_cols].to_numpy(dtype=np.float64)
+    if add_intercept:
+        X = np.column_stack([np.ones(len(X)), X])
+    return X
+
+
+def _dummy_encode(df, col, drop_first=True):
+    """
+    One-hot encode a categorical column and return new dummy column names.
+    Uses pd.get_dummies with drop_first to avoid perfect collinearity.
+    """
+    dummies = pd.get_dummies(df[col], prefix=col, drop_first=drop_first, dtype=float)
+    return dummies
+
+
+def _likelihood_ratio_test(log_lik_full, log_lik_reduced, df_diff):
+    """
+    Likelihood Ratio Test: H0 = reduced model fits as well as full model.
+    Returns (LR_statistic, p_value).
+    """
+    lr_stat = 2.0 * (log_lik_full - log_lik_reduced)
+    p_value = stats.chi2.sf(lr_stat, df=df_diff)
+    return lr_stat, p_value
+
+
+def _bic(log_lik, n_params, n_obs):
+    """BIC = -2·ℓ + k·ln(n)."""
+    return -2.0 * log_lik + n_params * np.log(n_obs)
+
+
+# ── zone binning ─────────────────────────────────────────────────────
+# Statcast zones 1–9 are in the strike zone, 11–14 are balls.
+# We bin them into four coarser location categories to limit the
+# number of dummy parameters introduced by the 14-level zone variable,
+# while still capturing the key ball-vs-strike distinction.
+def _bin_zone(zone):
+    """
+    Map Statcast zone codes to four location categories:
+      'Heart'  — zones 5 (middle-middle)
+      'Strike' — zones 1–4, 6–9 (other strike-zone cells)
+      'Chase'  — zones 11–14 (balls just off the plate)
+      'None'   — first pitch of at-bat (no previous pitch)
+    """
+    if zone == -1 or pd.isna(zone):
+        return "None"
+    z = int(zone)
+    if z == 5:
+        return "Heart"
+    if 1 <= z <= 9:
+        return "Strike"
+    if 11 <= z <= 14:
+        return "Chase"
+    return "None"
+
+
+# ════════════════════════════════════════════════════════════════════
+#  MAIN REGRESSION FUNCTION
+# ════════════════════════════════════════════════════════════════════
+
+def run_sequencing_model(df: pd.DataFrame, seed: int = 42):
+    """
+    Fit and compare the Baseline (Eq. 2) and Sequencing (Eq. 3) logistic
+    regression models proposed in the STAT 482 project.
+
+    Parameters
+    ----------
+    df   : cleaned DataFrame produced by clean_data()
+    seed : random seed for numpy operations
+
+    Prints
+    ------
+    Coefficient tables for both models (Wald z and p-values), LRT
+    result, BIC comparison, and LaTeX macro block for Report2.tex.
+
+    Returns
+    -------
+    dict with fitted coefficients, SEs, log-likelihoods, LRT/BIC
+    results, column name lists, and the full sequencing coefficient
+    DataFrame (seq_coef_df) for downstream use.
+    """
+
+    np.random.seed(seed)
+
+    print("\n" + "=" * 70)
+    print("  SEQUENCING MODEL ANALYSIS")
+    print("=" * 70)
+
+    # ── 5.1  Prepare modelling dataset ───────────────────────────────
+    # Drop first pitches of each plate appearance (prev_pitch_label == "None")
+    # for the sequencing model, but retain them for the baseline model.
+    # We build two separate design matrices accordingly.
+
+    phys_cols = ["release_speed", "ivb_inches", "hb_inches", "release_extension"]
+
+    # Bin the previous zone into four location categories
+    df = df.copy()
+    df["prev_zone_cat"] = df["prev_zone"].apply(_bin_zone)
+
+    # Construct current × previous pitch-type interaction label
+    df["pitch_seq"] = df["prev_pitch_label"] + "__" + df["pitch_label"]
+
+    # ── 5.1a  Baseline model dataset (all pitches with valid physics) ─
+    base_df = df[phys_cols + ["whiff"]].dropna()
+    print(f"\n[MODEL] Baseline dataset:    {len(base_df):,} pitches")
+
+    # ── 5.1b  Sequencing model dataset (exclude first-pitch-of-PA rows
+    #          where no lagged information exists) ──────────────────────
+    seq_df = df[
+        (df["prev_pitch_label"] != "None") &
+        df[phys_cols].notna().all(axis=1)
+    ].copy()
+    print(f"[MODEL] Sequencing dataset:  {len(seq_df):,} pitches "
+          f"(first pitches of PA excluded)")
+
+    # ── 5.2  Dummy-encode categorical sequencing variables ────────────
+    # Variables entering Z_{i-1}: prev_pitch_label, prev_zone_cat,
+    #                               prev_outcome
+    # Variable entering T_i * T_{i-1}: pitch_seq (interaction)
+
+    dum_prev_type    = _dummy_encode(seq_df, "prev_pitch_label", drop_first=True)
+    dum_prev_zone    = _dummy_encode(seq_df, "prev_zone_cat",    drop_first=True)
+    dum_prev_outcome = _dummy_encode(seq_df, "prev_outcome",     drop_first=True)
+
+    # For the interaction term T_i * T_{i-1} we retain sequences with
+    # at least MIN_SEQ_OBS observations to avoid perfect separation on
+    # extremely rare pitch-type pairs.
+    MIN_SEQ_OBS = 100
+
+    seq_df["pitch_seq"] = seq_df["pitch_seq"].astype(str)  # drop categorical if present
+
+    seq_counts_filtered = seq_df["pitch_seq"].value_counts()
+    common_seqs = seq_counts_filtered[seq_counts_filtered >= MIN_SEQ_OBS].index
+    seq_df["pitch_seq_filtered"] = np.where(
+        seq_df["pitch_seq"].isin(common_seqs),
+        seq_df["pitch_seq"],
+        "Other__Other",
+    )
+
+    dum_seq = _dummy_encode(seq_df, "pitch_seq_filtered", drop_first=True)
+
+
+    n_rare = (seq_df["pitch_seq"].isin(common_seqs) == False).sum()
+    print(f"[MODEL] Pitch-type sequences with >= {MIN_SEQ_OBS} obs retained: "
+          f"{len(common_seqs)} of {seq_counts_filtered.shape[0]} unique sequences "
+          f"({n_rare:,} pitches collapsed to 'Other__Other')")
+
+    # Assemble full sequencing design matrix
+    seq_feat_df = pd.concat(
+        [seq_df[phys_cols].reset_index(drop=True),
+         dum_prev_type.reset_index(drop=True),
+         dum_prev_zone.reset_index(drop=True),
+         dum_prev_outcome.reset_index(drop=True),
+         dum_seq.reset_index(drop=True)],
+        axis=1,
+    )
+    seq_feat_cols = seq_feat_df.columns.tolist()
+
+    y_seq  = seq_df["whiff"].to_numpy(dtype=np.float64)
+    X_seq  = _build_design_matrix(seq_feat_df, seq_feat_cols)
+
+    # Baseline uses only the subset of seq_df (same rows) so LRT is valid
+    # (models must be fit on identical observations).
+    y_base = y_seq.copy()
+    X_base = _build_design_matrix(seq_df, phys_cols)   # intercept added inside
+
+    print(f"[MODEL] Baseline design matrix:   {X_base.shape[0]:,} × {X_base.shape[1]}")
+    print(f"[MODEL] Sequencing design matrix: {X_seq.shape[0]:,} × {X_seq.shape[1]}")
+
+    # ── 5.3  Standardise physical predictors for numerical stability ──
+    # We z-score the four continuous columns in-place on both matrices
+    # (columns 1–4 in both; column 0 is the intercept).
+    phys_idx = slice(1, 5)   # columns 1,2,3,4 are the four physical vars
+    mu_phys  = X_base[:, phys_idx].mean(axis=0)
+    sd_phys  = X_base[:, phys_idx].std(axis=0)
+    sd_phys[sd_phys == 0] = 1.0   # guard against constant column
+
+    X_base[:, phys_idx] = (X_base[:, phys_idx] - mu_phys) / sd_phys
+    X_seq[:, phys_idx]  = (X_seq[:, phys_idx]  - mu_phys) / sd_phys
+
+    # ── 5.4  Fit models ───────────────────────────────────────────────
+    print("\n[MODEL] Fitting Baseline model (Eq. 2) ...")
+    beta_base, se_base, ll_base, conv_base = _fit_logistic(X_base, y_base, verbose=True)
+    print(f"  Log-likelihood: {ll_base:,.2f}  |  Converged: {conv_base}")
+
+    print("[MODEL] Fitting Sequencing model (Eq. 3) ...")
+    beta_seq, se_seq, ll_seq, conv_seq = _fit_logistic(X_seq, y_seq, verbose=True)
+    print(f"  Log-likelihood: {ll_seq:,.2f}  |  Converged: {conv_seq}")
+
+    # ── 5.5  Likelihood Ratio Test ────────────────────────────────────
+    # H0: The sequencing terms (γ Z_{i-1} + α T_i*T_{i-1}) jointly = 0
+    df_diff  = X_seq.shape[1] - X_base.shape[1]
+    lr_stat, lr_pval = _likelihood_ratio_test(ll_seq, ll_base, df_diff)
+
+    print(f"\n[LRT]  LR statistic  = {lr_stat:,.2f}  (df = {df_diff})")
+    print(f"[LRT]  p-value       = {lr_pval:.2e}")
+    if lr_pval < 0.001:
+        print("[LRT]  → Sequencing terms are jointly highly significant (p < 0.001).")
+    elif lr_pval < 0.05:
+        print("[LRT]  → Sequencing terms are jointly significant at α = 0.05.")
+    else:
+        print("[LRT]  → Sequencing terms are NOT jointly significant at α = 0.05.")
+
+    # ── 5.6  BIC comparison ───────────────────────────────────────────
+    n_obs     = len(y_base)
+    bic_base  = _bic(ll_base, X_base.shape[1], n_obs)
+    bic_seq   = _bic(ll_seq,  X_seq.shape[1],  n_obs)
+    delta_bic = bic_seq - bic_base   # negative = sequencing model preferred
+
+    print(f"\n[BIC]  Baseline model:    BIC = {bic_base:,.2f}  (k = {X_base.shape[1]})")
+    print(f"[BIC]  Sequencing model:  BIC = {bic_seq:,.2f}  (k = {X_seq.shape[1]})")
+    print(f"[BIC]  ΔBIC (Seq − Base) = {delta_bic:,.2f}")
+    if delta_bic < -10:
+        print("[BIC]  → Strong evidence favouring the Sequencing model.")
+    elif delta_bic < 0:
+        print("[BIC]  → Sequencing model preferred; evidence is modest.")
+    else:
+        print("[BIC]  → Baseline model preferred on BIC (penalty outweighs gain).")
+
+    # ── 5.7  Coefficient tables ───────────────────────────────────────
+    # 5.7a  Baseline model — physical characteristics
+    base_col_names = ["Intercept"] + phys_cols
+    z_base = beta_base / se_base
+    p_base = 2.0 * stats.norm.sf(np.abs(z_base))
+
+    print("\n" + "=" * 70)
+    print("  TABLE: BASELINE MODEL — Physical Characteristics")
+    print("  (standardised predictors; coefficients are log-odds per SD)")
+    print("-" * 70)
+    print(f"  {'Predictor':<32}  {'Coef':>8}  {'SE':>6}  {'z':>7}  {'p':>8}")
+    print("-" * 70)
+    for nm, b, s, z, p in zip(base_col_names, beta_base, se_base, z_base, p_base):
+        sig = "***" if p < 0.001 else ("**" if p < 0.01 else ("*" if p < 0.05 else ""))
+        print(f"  {nm:<32}  {b:8.4f}  {s:6.4f}  {z:7.3f}  {p:8.4f} {sig}")
+    print("-" * 70)
+
+    # 5.7b  Sequencing model — sequencing terms only, sorted by |z|
+    seq_col_names = ["Intercept"] + seq_feat_cols
+    z_seq = beta_seq / se_seq
+    p_seq = 2.0 * stats.norm.sf(np.abs(z_seq))
+
+    phys_set    = {"Intercept"} | set(phys_cols)
+    seq_indices = [i for i, nm in enumerate(seq_col_names) if nm not in phys_set]
+
+    seq_coef_df = pd.DataFrame({
+        "predictor": [seq_col_names[i] for i in seq_indices],
+        "coef":       beta_seq[seq_indices],
+        "se":         se_seq[seq_indices],
+        "z":          z_seq[seq_indices],
+        "p":          p_seq[seq_indices],
+    }).sort_values("z", key=np.abs, ascending=False)
+
+    print("\n" + "=" * 70)
+    print("  TABLE: SEQUENCING MODEL — Top Sequencing Terms (|z| ranked)")
+    print("  (physical terms same as baseline, not repeated here)")
+    print("-" * 70)
+    print(f"  {'Predictor':<45}  {'Coef':>8}  {'SE':>6}  {'z':>7}  {'p':>8}")
+    print("-" * 70)
+    for _, row in seq_coef_df.head(25).iterrows():
+        nm = row["predictor"].replace("prev_pitch_label_", "PrevType:") \
+                              .replace("prev_zone_cat_",    "PrevZone:") \
+                              .replace("prev_outcome_",     "PrevOut:") \
+                              .replace("pitch_seq_filtered_", "Seq:")
+        sig = ("***" if row["p"] < 0.001 else
+               ("**" if row["p"] < 0.01 else ("*" if row["p"] < 0.05 else "")))
+        print(f"  {nm:<45}  {row['coef']:8.4f}  {row['se']:6.4f}  "
+              f"{row['z']:7.3f}  {row['p']:8.4f} {sig}")
+    if len(seq_coef_df) > 25:
+        print(f"  ... ({len(seq_coef_df) - 25} additional terms not shown)")
+    print("-" * 70)
+
+    # ── 5.8  LaTeX macro values ───────────────────────────────────────
+    print("\n" + "=" * 70)
+    print("  LATEX MACRO VALUES  (copy to Report2.tex)")
+    print("=" * 70)
+    print(f"  \\seqLLBase     = {ll_base:,.2f}")
+    print(f"  \\seqLLSeq      = {ll_seq:,.2f}")
+    print(f"  \\seqLRStat     = {lr_stat:,.2f}")
+    print(f"  \\seqLRDf       = {df_diff}")
+    print(f"  \\seqLRPval     = {lr_pval:.2e}")
+    print(f"  \\seqBICBase    = {bic_base:,.2f}")
+    print(f"  \\seqBICSeq     = {bic_seq:,.2f}")
+    print(f"  \\seqDeltaBIC   = {delta_bic:,.2f}")
+    print("=" * 70)
+
+    return {
+        "beta_base":      beta_base,
+        "se_base":        se_base,
+        "ll_base":        ll_base,
+        "beta_seq":       beta_seq,
+        "se_seq":         se_seq,
+        "ll_seq":         ll_seq,
+        "lr_stat":        lr_stat,
+        "lr_pval":        lr_pval,
+        "df_diff":        df_diff,
+        "bic_base":       bic_base,
+        "bic_seq":        bic_seq,
+        "delta_bic":      delta_bic,
+        "col_names_base": ["Intercept"] + phys_cols,
+        "col_names_seq":  seq_col_names,
+        "seq_coef_df":    seq_coef_df,
+    }
 
 # ════════════════════════════════════════════════════════════════════
 #  MAIN
@@ -428,8 +835,10 @@ def main():
     fig_sequence_heatmap(df)
     fig_batter_whiff_dist(batter_rates, overall_whiff)
     fig_correlation_matrix(df)
-    run_logistic_regression(df)
     print("\n[DONE] All figures saved to", FIG_DIR)
+
+    run_logistic_regression(df)
+    seq_results = run_sequencing_model(df)
 
 
 if __name__ == "__main__":
