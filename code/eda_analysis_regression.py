@@ -18,6 +18,7 @@ Usage:
 
 import os
 import sys
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -34,9 +35,11 @@ from pybaseball import statcast
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR     = os.path.join(PROJECT_ROOT, "data")
 FIG_DIR      = os.path.join(PROJECT_ROOT, "figures")
+RESULT_DIR   = os.path.join(PROJECT_ROOT, "results")
 CACHE_FILE   = os.path.join(DATA_DIR, "statcast_2025.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(FIG_DIR, exist_ok=True)
+os.makedirs(RESULT_DIR, exist_ok=True)
 
 # ── style ──────────────────────────────────────────────────────────
 sns.set_theme(style="whitegrid", font_scale=1.15)
@@ -89,7 +92,22 @@ def fetch_data() -> pd.DataFrame:
         ]
         for start, end in date_ranges:
             print(f"       Fetching {start} to {end} ...")
-            chunk = statcast(start_dt=start, end_dt=end)
+            chunk = None
+            last_err = None
+            for attempt in range(1, 4):
+                try:
+                    chunk = statcast(start_dt=start, end_dt=end, parallel=False)
+                    break
+                except Exception as err:
+                    last_err = err
+                    print(f"       [WARN] Attempt {attempt}/3 failed: {err}")
+                    time.sleep(5 * attempt)
+
+            if chunk is None:
+                raise RuntimeError(
+                    f"Failed to fetch Statcast data for {start} to {end} after 3 attempts"
+                ) from last_err
+
             chunks.append(chunk)
             print(f"       → {len(chunk):,} pitches")
         df = pd.concat(chunks, ignore_index=True)
@@ -574,6 +592,31 @@ def _bin_zone(zone):
     return "None"
 
 
+def export_report2_model_input(df: pd.DataFrame):
+    """Save the cleaned modeling dataset for the combined mixed model."""
+    export_df = df.copy()
+    export_df["prev_zone_cat"] = export_df["prev_zone"].apply(_bin_zone)
+    export_df["pitch_seq"] = export_df["prev_pitch_label"] + "__" + export_df["pitch_label"]
+
+    cols = [
+        "whiff",
+        "release_speed",
+        "ivb_inches",
+        "hb_inches",
+        "release_extension",
+        "pitch_label",
+        "prev_pitch_label",
+        "prev_zone_cat",
+        "prev_outcome",
+        "pitch_seq",
+        "batter",
+    ]
+
+    out_path = os.path.join(DATA_DIR, "report2_model_input.csv")
+    export_df[cols].to_csv(out_path, index=False)
+    print(f"[DATA] Saved combined-model input to {out_path}")
+
+
 # ════════════════════════════════════════════════════════════════════
 #  SEQUENCING FUNCTION
 # ════════════════════════════════════════════════════════════════════
@@ -821,6 +864,129 @@ def run_sequencing_model(df: pd.DataFrame, seed: int = 42):
         "seq_coef_df":    seq_coef_df,
     }
 
+
+def save_model_fit_summary(seq_results):
+    """Persist baseline and sequencing fit metrics for downstream reporting."""
+    fit_df = pd.DataFrame(
+        [
+            {
+                "model": "Baseline",
+                "logLik": seq_results["ll_base"],
+                "BIC": seq_results["bic_base"],
+                "n_params": len(seq_results["beta_base"]),
+            },
+            {
+                "model": "Sequencing",
+                "logLik": seq_results["ll_seq"],
+                "BIC": seq_results["bic_seq"],
+                "n_params": len(seq_results["beta_seq"]),
+            },
+        ]
+    )
+    out_path = os.path.join(RESULT_DIR, "model_fit_summary.csv")
+    fit_df.to_csv(out_path, index=False)
+    print(f"[RESULT] Saved {out_path}")
+
+
+def fig_baseline_coefficients(seq_results):
+    """Figure 6 — baseline physical-effect estimates with 95% CIs."""
+    coef_df = pd.DataFrame(
+        {
+            "predictor": seq_results["col_names_base"][1:],
+            "coef": seq_results["beta_base"][1:],
+            "se": seq_results["se_base"][1:],
+        }
+    )
+    coef_df["low"] = coef_df["coef"] - 1.96 * coef_df["se"]
+    coef_df["high"] = coef_df["coef"] + 1.96 * coef_df["se"]
+
+    label_map = {
+        "release_speed": "Release Speed",
+        "ivb_inches": "IVB",
+        "hb_inches": "Horizontal Break",
+        "release_extension": "Extension",
+    }
+    coef_df["label"] = coef_df["predictor"].map(label_map).fillna(coef_df["predictor"])
+    coef_df = coef_df.sort_values("coef")
+
+    fig, ax = plt.subplots(figsize=(8.5, 4.8))
+    ax.axvline(0, color="black", linestyle="--", linewidth=1)
+    ax.errorbar(
+        coef_df["coef"],
+        coef_df["label"],
+        xerr=1.96 * coef_df["se"],
+        fmt="o",
+        color=PALETTE[0],
+        ecolor=PALETTE[2],
+        elinewidth=2,
+        capsize=4,
+    )
+    ax.set_xlabel("Log-Odds Change per 1 SD Increase")
+    ax.set_ylabel("")
+    ax.set_title("Baseline Logistic Regression Coefficients")
+    plt.tight_layout()
+
+    fig_path = os.path.join(FIG_DIR, "fig_baseline_coefficients.png")
+    fig.savefig(fig_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[FIG] Saved {fig_path}")
+
+    out_path = os.path.join(RESULT_DIR, "baseline_coefficients.csv")
+    coef_df.to_csv(out_path, index=False)
+    print(f"[RESULT] Saved {out_path}")
+
+
+def fig_sequencing_terms(seq_results, top_n: int = 12):
+    """Figure 7 — strongest current/previous pitch-type sequencing terms."""
+    seq_df = seq_results["seq_coef_df"].copy()
+    seq_df = seq_df[seq_df["predictor"].str.startswith("pitch_seq_filtered_")].copy()
+    seq_df = seq_df[np.isfinite(seq_df["se"]) & np.isfinite(seq_df["z"])].copy()
+    seq_df = seq_df[seq_df["p"] < 0.05].copy()
+    seq_df = seq_df.head(top_n)
+
+    if seq_df.empty:
+        print("[WARN] No sequencing interaction terms available for plotting.")
+        return
+
+    seq_df["low"] = seq_df["coef"] - 1.96 * seq_df["se"]
+    seq_df["high"] = seq_df["coef"] + 1.96 * seq_df["se"]
+
+    def clean_label(value: str) -> str:
+        label = value.replace("pitch_seq_filtered_", "")
+        parts = label.split("__")
+        if len(parts) == 2:
+            return f"{parts[0]} -> {parts[1]}"
+        return label
+
+    seq_df["label"] = seq_df["predictor"].map(clean_label)
+    seq_df = seq_df.sort_values("coef")
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.axvline(0, color="black", linestyle="--", linewidth=1)
+    ax.errorbar(
+        seq_df["coef"],
+        seq_df["label"],
+        xerr=1.96 * seq_df["se"],
+        fmt="o",
+        color=PALETTE[1],
+        ecolor=PALETTE[3],
+        elinewidth=2,
+        capsize=4,
+    )
+    ax.set_xlabel("Log-Odds Change Relative to Reference Sequence")
+    ax.set_ylabel("")
+    ax.set_title("Strongest Sequencing Interaction Terms")
+    plt.tight_layout()
+
+    fig_path = os.path.join(FIG_DIR, "fig_sequencing_terms.png")
+    fig.savefig(fig_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[FIG] Saved {fig_path}")
+
+    out_path = os.path.join(RESULT_DIR, "sequencing_top_terms.csv")
+    seq_df.to_csv(out_path, index=False)
+    print(f"[RESULT] Saved {out_path}")
+
 # ════════════════════════════════════════════════════════════════════
 #  MAIN
 # ════════════════════════════════════════════════════════════════════
@@ -828,6 +994,7 @@ def main():
     raw = fetch_data()
     df, n_raw = clean_data(raw)
     batter_rates, overall_whiff = print_summary(df, n_raw)
+    export_report2_model_input(df)
 
     print("\n[INFO] Generating figures...")
     fig_whiff_by_pitch_type(df)
@@ -839,6 +1006,9 @@ def main():
 
     run_logistic_regression(df)
     seq_results = run_sequencing_model(df)
+    save_model_fit_summary(seq_results)
+    fig_baseline_coefficients(seq_results)
+    fig_sequencing_terms(seq_results)
 
 
 if __name__ == "__main__":
