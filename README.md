@@ -87,13 +87,13 @@ Because of computational cost, the notebook implementation fits this model on a 
 
 Main insight:
 
-- The estimated batter random-intercept standard deviation is `0.549`.
-- The corresponding variance is `0.301`.
-- The implied intra-class correlation is `8.4%`.
+- The estimated batter random-intercept standard deviation is `0.301`.
+- The corresponding variance is `0.091`.
+- The implied intra-class correlation is `2.69%`.
 
 Interpretation:
 
-Even after controlling for pitch physics and pitch context, a meaningful share of latent whiff variation still lies between batters. Batter identity is not noise. Some hitters are systematically harder to miss against, while others remain more vulnerable across pitch contexts.
+Even after controlling for pitch physics and pitch context, batter-level heterogeneity is real but modest. Batter identity is not noise, but the corrected ICC of 2.7% suggests only a small share of latent whiff variation lies between batters.
 
 This model is used mainly to quantify batter-level heterogeneity rather than to serve as the main full-sample comparison model, since it is fit with a different estimator on a subsample.
 

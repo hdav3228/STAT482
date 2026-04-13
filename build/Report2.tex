@@ -44,9 +44,9 @@
 \newcommand{\glmmObs}{30{,}000}
 \newcommand{\glmmBatters}{649}
 \newcommand{\glmmFixed}{96}
-\newcommand{\glmmSigma}{0.549}
-\newcommand{\glmmSigmaSq}{0.301}
-\newcommand{\glmmICC}{8.4}
+\newcommand{\glmmSigma}{0.301}
+\newcommand{\glmmSigmaSq}{0.091}
+\newcommand{\glmmICC}{2.69}
 \newcommand{\combLogLik}{-198{,}638.43}
 \newcommand{\combBIC}{398{,}487.82}
 \newcommand{\combRandSD}{0.327}
@@ -325,6 +325,7 @@ This reinforces the need for richer models that incorporate sequencing and batte
 
 We first fit the physical-characteristics-only logistic regression from Equation~(\ref{eq:baseline}) using release speed, induced vertical break, horizontal break, and release extension as predictors.
 For direct comparison with the richer fixed-effect models, we evaluate it on the same non-first-pitch subset used later for sequencing, which yields log-likelihood \seqLLBase{} and BIC \seqBICBase{}.
+This reported baseline is the MLE reduced-model fit on non-first pitches, not the separate sklearn train/test implementation also present in the codebase.
 The coefficient estimates in Figure~\ref{fig:base_coef} are small in magnitude even after standardizing the physical predictors, which is consistent with the weak marginal correlations observed in Figure~\ref{fig:corr}.
 Release speed and induced vertical break both have negative coefficients, while horizontal break and extension have modest positive effects, but none of these effects is large enough to make the physical-only model competitive with the richer alternatives.
 Substantively, the baseline model captures broad pitch-quality tendencies but still treats each pitch as an isolated event, so it leaves both sequence-dependent deception and batter-specific contact skill in the residual variation.
@@ -350,7 +351,7 @@ Taken together, these results support the core sequencing hypothesis: whiff prob
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.82\textwidth]{figures/fig_sequencing_terms.png}
-    \caption{Largest sequencing interaction terms from the extended logistic-regression model. Positive coefficients indicate pitch sequences that increase whiff probability relative to the reference sequence, while negative coefficients indicate sequences that reduce it.}
+    \caption{Significant sequencing interaction terms ($p < 0.05$, pitch-pair sequences with $n \ge 100$ observations). Positive coefficients indicate pitch sequences that increase whiff probability relative to the reference sequence, while negative coefficients indicate sequences that reduce it.}
     \label{fig:seq_terms}
 \end{figure}
 
@@ -395,7 +396,7 @@ As a result, the combined model provides the clearest decomposition of whiff pro
 
 The main conclusion from Report 2 is that physical pitch characteristics are informative but incomplete on their own.
 The baseline logistic regression provides a useful benchmark, yet the sequencing model shows that much of the missing explanatory power lies in pitch context: the previous pitch type, previous result, and specific previous$\rightarrow$current pitch combinations all carry meaningful information about whether a batter will swing and miss.
-The standalone GLMM then shows that batter-level heterogeneity remains material even after introducing those pitch-context covariates: the estimated ICC of \glmmICC\% implies that batter identity explains a meaningful share of latent whiff variation.
+The standalone GLMM then shows that batter-level heterogeneity remains real but modest even after introducing those pitch-context covariates: the estimated ICC of \glmmICC\% suggests batter identity explains only a small share of latent whiff variation.
 Once batter-specific random intercepts are added directly to the sequencing specification, the combined model captures that additional source of systematic variation and becomes the best-fitting specification by a substantial margin.
 
 These results align with the baseball interpretation developed in the exploratory analysis.
