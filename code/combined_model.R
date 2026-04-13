@@ -11,9 +11,11 @@ script_dir <- dirname(normalizePath(script_path))
 project_root <- normalizePath(file.path(script_dir, ".."))
 
 data_dir <- file.path(project_root, "data")
-fig_dir <- file.path(project_root, "figures")
-result_dir <- file.path(project_root, "results")
+build_dir <- file.path(project_root, "build")
+fig_dir <- file.path(build_dir, "figures")
+result_dir <- file.path(build_dir, "results")
 
+dir.create(build_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(fig_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(result_dir, showWarnings = FALSE, recursive = TRUE)
 

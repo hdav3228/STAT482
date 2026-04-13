@@ -6,7 +6,10 @@ export LC_ALL=C
 export LANG=C
 export LC_CTYPE=C
 
-REPORT_BASENAME="${1:-Report1}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+REPORT_BASENAME="${1:-Report2}"
 REPORT_TEX="${REPORT_BASENAME}.tex"
 
 if [ ! -f "$REPORT_TEX" ]; then
@@ -24,10 +27,10 @@ mkdir -p out
 # -bibtex: use bibtex for references
 latexmk -pdf -output-directory=out -interaction=nonstopmode -bibtex "$REPORT_TEX"
 
-# Optional: Move the final PDF to the root for convenience
+# Copy the final PDF to the repo root for convenience
 if [ -f "out/${REPORT_BASENAME}.pdf" ]; then
-    cp "out/${REPORT_BASENAME}.pdf" .
-    echo "Compilation successful. ${REPORT_BASENAME}.pdf is in the root directory."
+    cp "out/${REPORT_BASENAME}.pdf" "../${REPORT_BASENAME}.pdf"
+    echo "Compilation successful. ${REPORT_BASENAME}.pdf is in the repo root."
 else
     echo "Compilation failed. Check the logs in out/${REPORT_BASENAME}.log."
 fi

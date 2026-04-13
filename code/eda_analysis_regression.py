@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """
-STAT 482 — Report 1 EDA Analysis
-=================================
+STAT 482 — Report 2 EDA and Fixed-Effect Modeling
+=================================================
 Fetches 2025 MLB Statcast data via pybaseball, cleans it per the report
-criteria, and generates all five EDA figures plus summary statistics.
+criteria, and generates the EDA plus fixed-effect model figures used in
+Project Report 2.
 
-Figures produced (saved to ../figures/):
+Figures produced (saved to ../build/figures/):
   1. fig_whiff_by_pitch_type.png
   2. fig_physical_distributions.png
   3. fig_sequence_heatmap.png
   4. fig_batter_whiff_dist.png
   5. fig_correlation_matrix.png
+  6. fig_baseline_coefficients.png
+  7. fig_sequencing_terms.png
 
 Usage:
-    python3 code/eda_analysis.py        (from the STAT482 project root)
+    python3 code/eda_analysis_regression.py
 """
 
 import os
@@ -34,10 +37,12 @@ from pybaseball import statcast
 # ── paths ──────────────────────────────────────────────────────────
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR     = os.path.join(PROJECT_ROOT, "data")
-FIG_DIR      = os.path.join(PROJECT_ROOT, "figures")
-RESULT_DIR   = os.path.join(PROJECT_ROOT, "results")
+BUILD_DIR    = os.path.join(PROJECT_ROOT, "build")
+FIG_DIR      = os.path.join(BUILD_DIR, "figures")
+RESULT_DIR   = os.path.join(BUILD_DIR, "results")
 CACHE_FILE   = os.path.join(DATA_DIR, "statcast_2025.csv")
 os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(BUILD_DIR, exist_ok=True)
 os.makedirs(FIG_DIR, exist_ok=True)
 os.makedirs(RESULT_DIR, exist_ok=True)
 
@@ -120,7 +125,7 @@ def fetch_data() -> pd.DataFrame:
 #  2. DATA CLEANING
 # ════════════════════════════════════════════════════════════════════
 def clean_data(raw: pd.DataFrame) -> pd.DataFrame:
-    """Apply cleaning filters described in Report 1 §2.4."""
+    """Apply the project cleaning filters used in Report 2."""
     n_raw = len(raw)
     print(f"\n[CLEAN] Starting with {n_raw:,} raw pitches")
 
@@ -208,7 +213,7 @@ def print_summary(df: pd.DataFrame, n_raw: int):
     n_pitchers = df["pitcher"].nunique()
 
     print("\n" + "=" * 60)
-    print("  LATEX MACRO VALUES  (copy to Report1.tex lines 22-28)")
+    print("  LATEX MACRO VALUES  (copy to build/Report2.tex)")
     print("=" * 60)
     print(f"  \\totalRaw     = {n_raw:,}")
     print(f"  \\totalPitches = {len(df):,}")
