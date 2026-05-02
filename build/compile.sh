@@ -10,6 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 REPORT_BASENAME="${1:-Report2}"
+OUTPUT_BASENAME="${2:-FinalReport}"
 REPORT_TEX="${REPORT_BASENAME}.tex"
 
 if [ ! -f "$REPORT_TEX" ]; then
@@ -29,8 +30,8 @@ latexmk -pdf -output-directory=out -interaction=nonstopmode -bibtex "$REPORT_TEX
 
 # Copy the final PDF to the repo root for convenience
 if [ -f "out/${REPORT_BASENAME}.pdf" ]; then
-    cp "out/${REPORT_BASENAME}.pdf" "../${REPORT_BASENAME}.pdf"
-    echo "Compilation successful. ${REPORT_BASENAME}.pdf is in the repo root."
+    cp "out/${REPORT_BASENAME}.pdf" "../${OUTPUT_BASENAME}.pdf"
+    echo "Compilation successful. ${OUTPUT_BASENAME}.pdf is in the repo root."
 else
     echo "Compilation failed. Check the logs in out/${REPORT_BASENAME}.log."
 fi

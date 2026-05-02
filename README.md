@@ -6,7 +6,7 @@ The central question is:
 
 > How do pitch sequencing and batter-specific tendencies influence whiff probability beyond the physical characteristics of the pitch itself?
 
-The final report is available at [Report2.pdf](./Report2.pdf). The report source, bibliography, figures, and LaTeX build script live in [build/](./build). The modeling code and notebook live in [code/](./code).
+The final report is available at [FinalReport.pdf](./FinalReport.pdf). The report source, bibliography, figures, and LaTeX build script live in [build/](./build). The modeling code and notebook live in [code/](./code).
 
 ## Dataset
 
@@ -23,7 +23,7 @@ These summary patterns already suggest that neither raw pitch quality nor batter
 
 ## Repository Layout
 
-- [Report2.pdf](./Report2.pdf): compiled final project report
+- [FinalReport.pdf](./FinalReport.pdf): compiled final project report
 - [build/](./build): LaTeX source, bibliography, compile script, and report figures
 - [code/eda_analysis_regression.py](./code/eda_analysis_regression.py): EDA, baseline model, sequencing model, and report-ready figure generation
 - [code/eda_regression.ipynb](./code/eda_regression.ipynb): organized notebook version of the EDA, baseline, sequencing, and standalone GLMM workflow
@@ -139,4 +139,4 @@ Typical workflow:
 3. Open and run `code/eda_regression.ipynb` for the notebook-based GLMM workflow
 4. Compile the report with `./build/compile.sh`
 
-The compiled final report PDF is copied back to the repository root as `Report2.pdf`.
+The compiled final report PDF is copied back to the repository root as `FinalReport.pdf`.
