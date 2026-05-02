@@ -1,6 +1,6 @@
 # STAT482: Modeling MLB Swing-and-Miss Outcomes
 
-This repository contains the code, figures, and LaTeX sources for Project Report 2 in STAT 482. The project studies pitch-level Statcast data from the full 2025 MLB regular season to understand what drives a swing-and-miss, or whiff.
+This repository contains the code, figures, and LaTeX sources for the STAT 482 final project report. The project studies pitch-level Statcast data from the full 2025 MLB regular season to understand what drives a swing-and-miss, or whiff.
 
 The central question is:
 
@@ -23,7 +23,7 @@ These summary patterns already suggest that neither raw pitch quality nor batter
 
 ## Repository Layout
 
-- [Report2.pdf](./Report2.pdf): compiled project report
+- [Report2.pdf](./Report2.pdf): compiled final project report
 - [build/](./build): LaTeX source, bibliography, compile script, and report figures
 - [code/eda_analysis_regression.py](./code/eda_analysis_regression.py): EDA, baseline model, sequencing model, and report-ready figure generation
 - [code/eda_regression.ipynb](./code/eda_regression.ipynb): organized notebook version of the EDA, baseline, sequencing, and standalone GLMM workflow
@@ -139,4 +139,4 @@ Typical workflow:
 3. Open and run `code/eda_regression.ipynb` for the notebook-based GLMM workflow
 4. Compile the report with `./build/compile.sh`
 
-The compiled PDF is copied back to the repository root as `Report2.pdf`.
+The compiled final report PDF is copied back to the repository root as `Report2.pdf`.

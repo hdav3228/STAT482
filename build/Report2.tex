@@ -28,7 +28,7 @@
 \newcommand{\batterHigh}{23.2}           % highest batter whiff rate (%)
 
 % ============================================================
-% REPORT 2 MODEL RESULTS
+% FINAL REPORT MODEL RESULTS
 % After running code/eda_analysis_regression.py, code/combined_model.R,
 % and the notebook in code/eda_regression.ipynb, replace these values
 % with the printed model summaries.
@@ -55,7 +55,7 @@
 \title{\textbf{Modeling the Effect of Pitch Sequencing and\\
 Batter-Specific Adjustments on Swing-and-Miss\\
 Outcomes in MLB} \\[6pt]
-\large Project Report 2}
+\large Final Project Report}
 \author{Group 10: Harsh Dave, Nick Griffin, Jack Leidlein, Hector Carrillo}
 \date{Spring 2026}
 
@@ -82,10 +82,10 @@ In such models, the probability of a whiff, $p_i = P(Y_i = 1)$, is typically mod
     + \beta_2 \,\texttt{IVB}_i
     + \beta_3 \,\texttt{HB}_i
     + \beta_4 \,\texttt{Ext}_i
-    + \beta_5 \,\texttt{Arm}_i
 \end{equation}
 %
-where \texttt{IVB} denotes induced vertical break, \texttt{HB} horizontal break, \texttt{Ext} release extension, and \texttt{Arm} arm angle.
+where \texttt{IVB} denotes induced vertical break, \texttt{HB} horizontal break, and \texttt{Ext} release extension.
+This four-variable baseline is the physical-characteristics specification used throughout the report; arm angle is not included as a separate model term because the cleaned modeling matrix retains release speed, IVB, HB, and release extension as the consistent pitch-level physical measures.
 Previous studies using this framework have found that main effects and simple interactions are often statistically insignificant or fail to explain the observed variation in outcomes.
 
 The fundamental limitation of this approach is that it treats each pitch as an independent, context-free event, ignoring two critical sources of variation: \textbf{sequencing} and \textbf{batter heterogeneity}.
@@ -197,7 +197,7 @@ All analysis and visualization is performed in Python using the \texttt{matplotl
 Table~\ref{tab:summary} presents descriptive statistics for the four primary physical pitch characteristics.
 Release speed has a mean of approximately 89.5 mph with a standard deviation of 5.8 mph, which reflects the typical mix of fastballs (mid-to-upper 90s) and off-speed pitches (low-to-mid 80s) in a normal MLB game.
 Induced vertical break averages 6.9 inches but spans a wide range ($-$24.0 to 27.5 in.), capturing the contrast between pitches with heavy topspin (negative IVB, such as curveballs) and those with strong backspin (positive IVB, such as four-seam fastballs).
-Horizontal break also exhibits substantial variability with a standard deviation of 10.8 inches, reflecting the diversity of arm angles and pitch types in the dataset.
+Horizontal break also exhibits substantial variability with a standard deviation of 10.8 inches, reflecting the diversity of pitch types and lateral movement profiles in the dataset.
 
 \begin{table}[H]
 \centering
@@ -394,7 +394,7 @@ As a result, the combined model provides the clearest decomposition of whiff pro
 \section{Discussion}
 %%==============================================================
 
-The main conclusion from Report 2 is that physical pitch characteristics are informative but incomplete on their own.
+The main conclusion from the final project analysis is that physical pitch characteristics are informative but incomplete on their own.
 The baseline logistic regression provides a useful benchmark, yet the sequencing model shows that much of the missing explanatory power lies in pitch context: the previous pitch type, previous result, and specific previous$\rightarrow$current pitch combinations all carry meaningful information about whether a batter will swing and miss.
 The standalone GLMM then shows that batter-level heterogeneity remains real but modest even after introducing those pitch-context covariates: the estimated ICC of \glmmICC\% suggests batter identity explains only a small share of latent whiff variation.
 Once batter-specific random intercepts are added directly to the sequencing specification, the combined model captures that additional source of systematic variation and becomes the best-fitting specification by a substantial margin.
@@ -410,5 +410,14 @@ That combined approach gives the best fit among the directly comparable models a
 \newpage
 \bibliographystyle{chicago}
 \bibliography{Report2Ref}
+
+\newpage
+\section*{Code Repository}
+The main data analysis code is provided in the project repository:
+\begin{center}
+\url{https://github.com/hdav3228/STAT482}
+\end{center}
+The repository includes the Python exploratory analysis, logistic regression
+models, notebook-based GLMM workflow, and combined mixed-effects model code.
 
 \end{document}
