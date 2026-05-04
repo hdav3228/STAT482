@@ -274,16 +274,17 @@ Overall, these distributional differences, while visible, are not dramatic for a
 A central hypothesis of this study is that pitch effectiveness depends on the preceding pitch.
 Figure~\ref{fig:seq_heatmap} presents a heatmap of whiff rates organized by previous pitch type (rows) and current pitch type (columns).
 Several noteworthy patterns are visible.
-Splitters and knuckle-curves thrown after curveballs achieve the highest whiff rates in the heatmap (20.1\% and 19.9\%, respectively), suggesting that batters struggle to adjust to a second consecutive breaking ball with different movement profiles.
-Sequences from sinkers or four-seam fastballs to splitters also produce elevated whiff rates (19.2\% and 16.0\%), consistent with the pitch tunneling hypothesis: when consecutive pitches appear similar out of the pitcher's hand but diverge in trajectory near the plate, the batter's ability to adjust is compromised.
-Conversely, sinkers preceded by any pitch type consistently show the lowest column-wise whiff rates (5.7\%--8.5\%), suggesting that batters find sinkers easier to put in play regardless of sequence.
-Fastball variants (four-seam fastballs, cutters) thrown after breaking balls tend to have relatively moderate whiff rates (10--13\%), suggesting that batters may sit on velocity after seeing off-speed pitches.
-These findings strongly motivate the inclusion of sequencing variables and pitch-type interaction terms in the logistic regression model specified in Equation~(\ref{eq:baseline}).
+
+Splitters achieve the highest average whiff rate, and account for the three highest whiff rates on the heatmap: splitter $\rightarrow$ splitter (21.3\%), knuckle-curve $\rightarrow$ splitter (21.0\%), curveball $\rightarrow$ splitter (20.1\%). Other notable whiff rates include knuckle-curve $\rightarrow$ knuckle-curve (19.9\%), sinker $\rightarrow$ knuckle-curve (19.4\%), and slider $\rightarrow$ slider (19.3\%). Clearly, throwing the same pitch successively results in high whiff rates, suggesting that batters anticipate varied pitch sequences. However, they still struggle to adjust to consecutive breaking balls with substantially different movement paths. This is evident from the high whiff rates (16-20\%) across the board after sliders, sweepers, and curveballs. 
+
+The three types of fastball (cutters, four-seam fastballs, and sinkers) exhibit the lowest whiff rates overall. Furthermore, sinkers display the lowest average whiff rate by a considerable margin, likely because they are thrown as management pitches. These are pitches designed for easy groundouts and weak contact, rather than swing-and-misses. Four-seam fastballs and cutters thrown after breaking balls tend to have relatively moderate whiff rates (10 - 13\%), suggesting that batters may choose not to swing on high-speed pitches after seeing off-speed pitches. Despite the low whiff rates on the three fastball types, follow-up pitches show moderate to high whiff rates (14-19\%), consistent with the pitch tunneling hypothesis, but not fully explaining it. When consecutive pitches appear similar out of the pitcher's hand but diverge in trajectory near the plate, the batter's ability to adjust is compromised.
+
+These findings strongly motivate the inclusion of sequencing variables and pitch-type interaction terms in the logistic regression model defined by Equation~(\ref{eq:baseline}).
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.85\textwidth]{figures/fig_sequence_heatmap.png}
-    \caption{Heatmap of whiff rates by pitch sequence. Rows represent the previous pitch type; columns represent the current pitch type. Cells with fewer than 100 observations are excluded. Fastball-to-breaking-ball sequences show elevated whiff rates.}
+    \caption{Heatmap of whiff rates by pitch sequence. Rows represent the previous pitch type; columns represent the current pitch type. Cells with fewer than 100 observations are excluded.}
     \label{fig:seq_heatmap}
 \end{figure}
 
@@ -339,14 +340,14 @@ Substantively, the baseline model captures broad pitch-quality tendencies but st
 
 \subsection{Sequencing Model}
 
-We next augment the baseline specification with the previous pitch type, a coarsened previous-zone indicator, previous-pitch outcome, and current$\times$previous pitch-type sequence effects.
-Relative to the baseline fit on the same observations, the sequencing model increases the log-likelihood from \seqLLBase{} to \seqLLSeq{}.
-The likelihood-ratio statistic is \seqLRStat{} on \seqLRDf{} degrees of freedom, with p-value \seqLRPval{}, so the sequencing terms are jointly significant.
-The BIC also improves from \seqBICBase{} to \seqBICSeq{} (\(\Delta\)BIC = \seqDeltaBIC{}), which indicates that the fit gain is large enough to justify the additional model complexity.
-Figure~\ref{fig:seq_terms} displays the strongest pitch-sequence interaction terms from this model.
-The strongest positive effects all occur when a four-seam fastball is followed by a breaking or off-speed pitch, especially four-seam fastball$\rightarrow$knuckle-curve, splitter, sweeper, and slider.
-The one large negative interaction in Figure~\ref{fig:seq_terms} is four-seam fastball$\rightarrow$sinker, which is consistent with sinkers functioning more as contact-management pitches than swing-and-miss pitches.
-Taken together, these results support the core sequencing hypothesis: whiff probability depends not just on what pitch is thrown, but on what the batter just saw.
+We next extend the baseline model with features for the previous pitch type, previous pitch zone, previous pitch outcome, and current$\times$previous pitch-type interaction effects.
+Relative to the baseline model fit to the same observations, the sequencing model increases the log-likelihood from \seqLLBase{} to \seqLLSeq{}.
+The likelihood-ratio statistic is \seqLRStat{} on \seqLRDf{} degrees of freedom with a p-value of \seqLRPval{}, confirming the sequencing terms are jointly significant.
+The BIC also improves from \seqBICBase{} to \seqBICSeq{} (\(\Delta\)BIC = \seqDeltaBIC{}), indicating the fit gain is substantial enough to justify the additional model complexity.
+Figure~\ref{fig:seq_terms} presents the largest pitch-sequence interaction terms from this model.
+The strongest positive effects all occur when a four-seam fastball is followed by a breaking or off-speed pitch, especially four-seam fastball $\rightarrow$ knuckle-curve, splitter, sweeper, and slider.
+The one large negative interaction in Figure~\ref{fig:seq_terms} is four-seam fastball $\rightarrow$ sinker, which is consistent with sinkers functioning more as contact-management pitches than swing-and-miss pitches.
+Taken together, these results support the sequencing hypothesis; whiff probability depends not just on what pitch is thrown, but on what the batter just saw.
 
 \begin{figure}[H]
     \centering
