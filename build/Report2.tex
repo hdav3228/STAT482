@@ -323,7 +323,7 @@ This reinforces the need for richer models that incorporate sequencing and batte
 
 \subsection{Baseline Logistic Regression}
 
-We first fit the physical-characteristics-only logistic regression from Equation~(\ref{eq:baseline}) using release speed, induced vertical break, horizontal break, and release extension as predictors.
+We first fit the logistic regression from Equation~(\ref{eq:baseline}) using only physical characteristics. These are release speed, induced vertical break, horizontal break, and release extension.
 For direct comparison with the richer fixed-effect models, we evaluate it on the same non-first-pitch subset used later for sequencing, which yields log-likelihood \seqLLBase{} and BIC \seqBICBase{}.
 This reported baseline is the MLE reduced-model fit on non-first pitches, not the separate sklearn train/test implementation also present in the codebase.
 The coefficient estimates in Figure~\ref{fig:base_coef} are small in magnitude even after standardizing the physical predictors, which is consistent with the weak marginal correlations observed in Figure~\ref{fig:corr}.
