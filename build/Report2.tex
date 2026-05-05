@@ -392,18 +392,18 @@ As a result, the combined model provides the clearest decomposition of whiff pro
 \end{figure}
 
 %%==============================================================
-\section{Discussion}
+\section{Conclusion}
 %%==============================================================
 
-The main conclusion from the final project analysis is that physical pitch characteristics are informative but incomplete on their own.
-The baseline logistic regression provides a useful benchmark, yet the sequencing model shows that much of the missing explanatory power lies in pitch context: the previous pitch type, previous result, and specific previous$\rightarrow$current pitch combinations all carry meaningful information about whether a batter will swing and miss.
-The standalone GLMM then shows that batter-level heterogeneity remains real but modest even after introducing those pitch-context covariates: the estimated ICC of \glmmICC\% suggests batter identity explains only a small share of latent whiff variation.
-Once batter-specific random intercepts are added directly to the sequencing specification, the combined model captures that additional source of systematic variation and becomes the best-fitting specification by a substantial margin.
+The central finding of this analysis is that physical pitch characteristics are informative but incomplete on their own.
+The baseline logistic regression provides a useful benchmark, yet the sequencing model shows that much of the remaining explanatory power lies in pitch context. The previous pitch type, previous result, and specific previous $\rightarrow$ current pitch combinations all carry meaningful information about whether a batter will swing and miss.
+The standalone GLMM then shows that batter-level heterogeneity is present but modest even after introducing those pitch-context covariates, with the estimated ICC of \glmmICC\% suggesting batter identity explains only a small share of whiff variation.
+Once batter-specific random intercepts are added directly to the sequencing model, the final combined model captures that additional source of systematic variation and becomes the best-fitting model by a substantial margin.
 
-These results align with the baseball interpretation developed in the exploratory analysis.
+These results are consistent with the baseball interpretation developed in the exploratory analysis.
 Pitchers do not generate whiffs solely by throwing hard or by maximizing raw movement; they also generate whiffs by choosing pitch orders that distort timing and by exploiting batter-specific weaknesses.
 From a statistical standpoint, that means the most useful model is the one that jointly accounts for pitch-level characteristics, sequential context, and batter heterogeneity.
-That combined approach gives the best fit among the directly comparable models and yields the most realistic picture of how swing-and-miss outcomes arise over the course of a plate appearance.
+This combined approach gives the best fit among the directly comparable models, and yields the most realistic picture of how swing-and-miss outcomes arise over the course of a plate appearance.
 
 
 %% BIBLIOGRAPHY
