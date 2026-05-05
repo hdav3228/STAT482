@@ -305,11 +305,11 @@ This variability confirms that batter identity is an important grouping factor a
 \subsection{Predictor Correlations}
 
 Figure~\ref{fig:corr} presents the pairwise correlations among the continuous predictors and the binary whiff outcome.
-The most notable inter-predictor relationship is between release speed and induced vertical break ($r = 0.72$), which is expected because high-velocity fastballs generate strong backspin and thus higher vertical break.
-This substantial correlation warrants monitoring via Variance Inflation Factors (VIFs) in the modeling stage to guard against multicollinearity.
-Release speed and horizontal break are negatively correlated ($r = -0.30$), reflecting the tendency for slower breaking pitches to exhibit greater lateral movement.
-Critically, none of the individual correlations with the whiff outcome exceed $|r| = 0.05$ in magnitude---release speed ($r = -0.05$), IVB ($r = -0.04$), HB ($r = 0.02$), and extension ($r = 0.01$)---confirming that no single physical characteristic is a dominant predictor of swing-and-miss outcomes.
-This reinforces the need for richer models that incorporate sequencing and batter heterogeneity.
+The strongest relationship is between release speed and induced vertical break ($r = 0.72$). This makes sense because high-velocity fastballs tend to generate strong backspin, which leads to higher vertical break.
+This correlation is worth monitoring with Variance Inflation Factors (VIFs) in the modeling stage so that multicollinearity does not distort the coefficient estimates.
+Release speed and horizontal break are also negatively correlated ($r = -0.30$), reflecting the tendency for slower breaking pitches to move more laterally.
+Most importantly, none of the individual correlations with whiff exceed $|r| = 0.05$ in magnitude: release speed ($r = -0.05$), IVB ($r = -0.04$), HB ($r = 0.02$), and extension ($r = 0.01$).
+This confirms that no single physical characteristic is a dominant predictor of swing-and-miss outcomes, which reinforces the need for richer models that incorporate sequencing and batter heterogeneity.
 
 \begin{figure}[H]
     \centering
@@ -368,14 +368,14 @@ Because this GLMM is fit via variational Bayes on a subsample for tractability, 
 
 \subsection{Combined Model}
 
-The combined model adds batter-specific random intercepts to the sequencing specification, allowing each hitter to have a different baseline tendency to swing and miss while still estimating a common set of pitch-level and sequencing effects.
-This model is fit as a logistic mixed model with one random intercept for each of the 673 batters appearing in the non-first-pitch modeling subset.
-Its log-likelihood is \combLogLik{} and its BIC is \combBIC{}, which improves on both the baseline and sequencing-only fits.
-Relative to the sequencing model, the combined specification lowers BIC by 4{,}146.22 and increases log-likelihood by roughly 2{,}047, so batter heterogeneity still matters even after sequencing is included.
-Figure~\ref{fig:model_compare} shows the fit comparison across the three models estimated on the common full-sample likelihood framework, and Figure~\ref{fig:combined_re} plots the estimated batter random intercepts from the combined model.
-The estimated random-intercept standard deviation is \combRandSD{}, which is large enough to confirm that batter-level heterogeneity remains substantial even after controlling for pitch characteristics and sequencing.
-That result is important substantively: some hitters maintain low whiff propensities in nearly every context, while others remain vulnerable even after accounting for the types and order of pitches they see.
-As a result, the combined model provides the clearest decomposition of whiff probability into pitch-quality effects, sequence effects, and batter-specific contact skill.
+Finally, the combined model adds batter-specific random intercepts to the sequencing model. This allows each hitter to have a different baseline tendency to swing and miss while the model still estimates the same pitch-level and sequencing effects for the full dataset.
+The model is fit as a logistic mixed model with one random intercept for each of the 673 batters appearing in the non-first-pitch modeling subset.
+Its log-likelihood is \combLogLik{} and its BIC is \combBIC{}, improving on both the baseline and sequencing-only fits.
+Relative to the sequencing model, the combined model lowers BIC by 4{,}146.22 and increases log-likelihood by roughly 2{,}047. This shows that batter heterogeneity still matters even after sequencing is included.
+Figure~\ref{fig:model_compare} shows the fit comparison across the three models estimated on the common full-sample likelihood framework. Figure~\ref{fig:combined_re} plots the estimated batter random intercepts from the combined model.
+The estimated random-intercept standard deviation is \combRandSD{}, which confirms that batter-level heterogeneity remains substantial after controlling for pitch characteristics and sequencing.
+This result matters because some hitters maintain low whiff propensities in nearly every context, while others remain vulnerable even after accounting for the types and order of pitches they see.
+Taken together, the combined model provides the clearest decomposition of whiff probability into pitch-quality effects, sequence effects, and batter-specific contact skill.
 
 \begin{figure}[H]
     \centering
