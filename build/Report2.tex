@@ -304,12 +304,12 @@ This variability confirms that batter identity is an important grouping factor a
 
 \subsection{Predictor Correlations}
 
-Figure~\ref{fig:corr} presents the pairwise correlations among the continuous predictors and the binary whiff outcome.
+Figure~\ref{fig:corr} shows the pairwise correlations among the continuous predictors and the binary whiff outcome.
 The strongest relationship is between release speed and induced vertical break ($r = 0.72$). This makes sense because high-velocity fastballs tend to generate strong backspin, which leads to higher vertical break.
-This correlation is worth monitoring with Variance Inflation Factors (VIFs) in the modeling stage so that multicollinearity does not distort the coefficient estimates.
-Release speed and horizontal break are also negatively correlated ($r = -0.30$), reflecting the tendency for slower breaking pitches to move more laterally.
+We wanted to take a deeper look at this with Variance Inflation Factors (VIFs) to ensure that multicollinearity did not affect the coefficient estimates.
+Release speed and horizontal break are also negatively correlated ($r = -0.30$), which shows that slower breaking pitches tend to move more laterally.
 Most importantly, none of the individual correlations with whiff exceed $|r| = 0.05$ in magnitude: release speed ($r = -0.05$), IVB ($r = -0.04$), HB ($r = 0.02$), and extension ($r = 0.01$).
-This confirms that no single physical characteristic is a dominant predictor of swing-and-miss outcomes, which reinforces the need for richer models that incorporate sequencing and batter heterogeneity.
+This confirmed our initial theory that no single physical characteristic can decide swing-and-miss outcomes on its own, which meant we needed to look into a more comprehensive model, and more specifically, a combined model.
 
 \begin{figure}[H]
     \centering
