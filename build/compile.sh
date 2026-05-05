@@ -9,7 +9,7 @@ export LC_CTYPE=C
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-REPORT_BASENAME="${1:-Report2}"
+REPORT_BASENAME="${1:-FinalReport}"
 OUTPUT_BASENAME="${2:-FinalReport}"
 REPORT_TEX="${REPORT_BASENAME}.tex"
 

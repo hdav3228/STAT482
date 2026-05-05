@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-STAT 482 — Report 2 EDA and Fixed-Effect Modeling
+STAT 482 — FinalReport EDA and Fixed-Effect Modeling
 =================================================
 Fetches 2025 MLB Statcast data via pybaseball, cleans it per the report
 criteria, and generates the EDA plus fixed-effect model figures used in
-Project Report 2.
+FinalReport.
 
 Figures produced (saved to ../build/figures/):
   1. fig_whiff_by_pitch_type.png
@@ -125,7 +125,7 @@ def fetch_data() -> pd.DataFrame:
 #  2. DATA CLEANING
 # ════════════════════════════════════════════════════════════════════
 def clean_data(raw: pd.DataFrame) -> pd.DataFrame:
-    """Apply the project cleaning filters used in Report 2."""
+    """Apply the project cleaning filters used in FinalReport."""
     n_raw = len(raw)
     print(f"\n[CLEAN] Starting with {n_raw:,} raw pitches")
 
@@ -213,7 +213,7 @@ def print_summary(df: pd.DataFrame, n_raw: int):
     n_pitchers = df["pitcher"].nunique()
 
     print("\n" + "=" * 60)
-    print("  LATEX MACRO VALUES  (copy to build/Report2.tex)")
+    print("  LATEX MACRO VALUES  (copy to build/FinalReport.tex)")
     print("=" * 60)
     print(f"  \\totalRaw     = {n_raw:,}")
     print(f"  \\totalPitches = {len(df):,}")
@@ -639,7 +639,7 @@ def run_sequencing_model(df: pd.DataFrame, seed: int = 42):
     Prints
     ------
     Coefficient tables for both models (Wald z and p-values), LRT
-    result, BIC comparison, and LaTeX macro block for Report2.tex.
+    result, BIC comparison, and LaTeX macro block for FinalReport.tex.
 
     Returns
     -------
@@ -839,7 +839,7 @@ def run_sequencing_model(df: pd.DataFrame, seed: int = 42):
 
     # ── 5.8  LaTeX macro values ───────────────────────────────────────
     print("\n" + "=" * 70)
-    print("  LATEX MACRO VALUES  (copy to Report2.tex)")
+    print("  LATEX MACRO VALUES  (copy to FinalReport.tex)")
     print("=" * 70)
     print(f"  \\seqLLBase     = {ll_base:,.2f}")
     print(f"  \\seqLLSeq      = {ll_seq:,.2f}")
