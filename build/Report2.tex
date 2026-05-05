@@ -292,7 +292,7 @@ These findings strongly motivate the inclusion of sequencing variables and pitch
 
 To examine whether batter identity is an important source of variation, we compute per-batter whiff rates for all batters who faced at least 200 pitches during the season (\numBatters{} batters).
 Figure~\ref{fig:batter_dist} shows the distribution of these batter-level whiff rates.
-The distribution is approximately normal with a pronounced spread: batter-level whiff rates range from roughly \batterLow\% to \batterHigh\%, illustrating the large degree of heterogeneity in contact ability across MLB hitters.
+The distribution is approximately normal with an apparent spread: batter-level whiff rates range from roughly \batterLow\% to \batterHigh\%, illustrating the large degree of heterogeneity in contact ability across MLB hitters.
 This variability confirms that batter identity is an important grouping factor and justifies the use of batter-level random intercepts in the planned GLMM.
 
 \begin{figure}[H]
@@ -360,10 +360,10 @@ Taken together, these results support the sequencing hypothesis; whiff probabili
 
 We next fit a standalone GLMM that focuses on batter heterogeneity directly by adding a batter-level random intercept to the logistic model.
 In the notebook implementation, this model is estimated with \texttt{BinomialBayesMixedGLM} using the same sequencing-style fixed-effect structure and a random intercept for batter.
-For computational tractability, the GLMM is fit on a random subsample of \glmmObs{} pitches from the sequencing dataset, spanning \glmmBatters{} batters and \glmmFixed{} fixed-effect terms.
+In order to be within computational limits, the GLMM is fit on a random subsample of \glmmObs{} pitches from the sequencing dataset, spanning \glmmBatters{} batters and \glmmFixed{} fixed-effect terms.
 The estimated standard deviation of the batter random intercept is \glmmSigma{} (variance \glmmSigmaSq{}), which implies an intra-class correlation of \glmmICC\%.
 On the latent log-odds scale, this means that a nontrivial share of the remaining variation in whiff probability lies between batters rather than within batters across pitches.
-That result matters because it shows that batter identity is not just a nuisance grouping factor: even after controlling for pitch physics and pitch context, hitters still differ systematically in baseline swing-and-miss tendency.
+That result matters because it shows that batter identity is not just a noisy grouping factor: even after controlling for pitch physics and pitch context, hitters still differ systematically in baseline swing-and-miss tendency.
 Because this GLMM is fit via variational Bayes on a subsample for tractability, we treat it primarily as evidence about the magnitude of batter-level heterogeneity rather than place it in the full-sample BIC comparison used for the fixed-effect and combined models.
 
 \subsection{Combined Model}
